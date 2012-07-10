@@ -1,9 +1,27 @@
-application: jan-ken-pony
+application: jankenpony
 version: 0
 runtime: python27
 api_version: 1
 threadsafe: true
 
 handlers:
+- url: /
+  script: main.app
+
+- url: /index\.html
+  script: main.app
+
+- url: /(.*\.css)
+  static_files: css/\1
+  upload: css/(.*\.css)
+
+- url: /(.*\.(gif|png|jpg|ico))
+  static_files: static/\1
+  upload: static/(.*\.(gif|png|jpg|ico))
+
 - url: /.*
-  script: mainHandler.app
+  script: not_found.app
+
+libraries:
+- name: jinja2
+  version: latest
