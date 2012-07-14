@@ -22,11 +22,9 @@ handlers:
   static_files: static/image/\1
   upload: static/image/(.*\.(gif|png|jpg))
 
-- url: /
-  script: main_handler.app
-
 - url: /.*
-  script: not_found.app
+  script: main.app
+
 
 
 libraries:

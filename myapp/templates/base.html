@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//PT">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-br">
+  <head>
+    {% block head %}
+      <link rel="shortcut icon" href="./favicon.ico">
+      <link rel="stylesheet" href="./style.css" />
+      <title>{% block title %}{% endblock %} - JankenPony</title>
+    {% endblock %}
+  </head>
+<body>
+
+  <div id="top">
+    <div id="header">
+      <a id="title">JANKENPONY</a> {% block header %}{% endblock %}
+    </div>
+  </div>
+  
+  <div id="center">
+    <div id="container">
+    
+      <div id="content">
+        {% block content %}{% endblock %}
+      </div>
+      
+      <div id="footer">
+        {% block footer %}{% endblock %}
+        &copy; Copyright 2012 by <a href="http://domain.invalid/">jankenpony</a>.
+      </div>
+    
+    </div>
+  </div>
+  
+</body>
