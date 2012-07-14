@@ -2,34 +2,13 @@
 
 {% block title %}Página principal{% endblock %}
 
-{% block head %}
-  {{ super() }}
-  <style type="text/css">
-    .important { color: #336699; }
-  </style>
-{% endblock %}
-
-{% block header %}
-  {% if player %}
-    {{ player.nickname|e }} <a href="{{ login_logout_url }}">logout</a>
-  {% else %}
-    <a href="{{ login_logout_url }}">Login google's account</a>
-  {% endif %}
-{% endblock %}
-
 {% block content %}
-  <p class="important">
-    Testing this Template<br />
-    Test value1: {{ value1|escape }}<br />
-    Test value2: {{ value2|e }}
-  </p>
-
   <div>
-    <form action="/" method="post">
-      Create a new Game!<br />
-      <input type="hidden" name="option" value="create_game" />
-      <input type="text" name="game_name" /><br />
-      <input type="submit" value="Create new Game" />
-    </form>
+    Game list:
+    <ul>
+      {% for game in games %}
+        <li><a href="/game/{{ game.game_id }}">{{ game.name|e }}</a></li>
+      {% endfor %}
+    </ul>
   </div>
 {% endblock %}

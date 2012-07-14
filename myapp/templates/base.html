@@ -2,8 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="pt-br">
   <head>
     {% block head %}
-      <link rel="shortcut icon" href="./favicon.ico">
-      <link rel="stylesheet" href="./style.css" />
+      <link rel="shortcut icon" href="/favicon.ico">
+      <link rel="stylesheet" href="/style.css" />
       <title>{% block title %}{% endblock %} - JankenPony</title>
     {% endblock %}
   </head>
@@ -11,7 +11,23 @@
 
   <div id="top">
     <div id="header">
-      <a id="title">JANKENPONY</a> {% block header %}{% endblock %}
+      <div id="navigation">
+        <a href="/" id="title">JANKENPONY</a> {% block header %}{% endblock %}
+      </div>
+      
+      <div id="login">
+        Login:
+        {% if player.is_anonymous %}
+          <a href="{{ player.login_url }}">Login google's account</a>
+        {% else %}
+          {{ player.nickname|e }}
+          {% if player.is_admin %}
+            <a href="/admin">Admin area</a>
+          {% endif %}
+          <a href="{{ player.logout_url }}">logout</a>
+        {% endif %}
+      </div>
+      
     </div>
   </div>
   

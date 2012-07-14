@@ -15,10 +15,20 @@ class Game(db.Model):
     return str(self.key())
   
   # The game's name
-  name = db.StringProperty()
+  name = db.StringProperty(required=True)
+  
+  # The game's link
+  # It should be unique
+  game_id = db.StringProperty(required=True)
   
   # It indicates when the game is active
   active = db.BooleanProperty(default=True)
+  
+  # It count how many players are played it all the time
+  players_counter = db.IntegerProperty(default=0)
+  
+  # It count how many players are online in this game
+  online_players = db.IntegerProperty(default=0)
   
   # Indicates the number of actual match, just a progressive counter
   # Every new match increments this number

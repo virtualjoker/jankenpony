@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Página principal{% endblock %}
+
+{% block content %}
+  <div>
+    <h2>{{ game.name }}</h2>
+    {% if player.is_anonymous %}
+      <div>You should log in to play this game!</div>
+    {% else %}
+      
+      <div id="status">
+      {% if status %}
+        
+        {% if status.playing %}
+          <form action="" method="post">
+            You are playing this game, wait the challenge
+            <input type="hidden" name="option" value="sign_out" />
+            <input type="submit" value="Sing OUT" />
+          </form>
+        {% else %}
+          <form action="" method="post">
+            You are not playing this game, sign in
+            <input type="hidden" name="option" value="sign_in" />
+            <input type="submit" value="Sing IN" />
+          </form>
+        {% endif %}
+      
+      {% else %}
+      
+        <form action="" method="post">
+          You is out of this game
+          <input type="hidden" name="option" value="sign_up" />
+          <input type="submit" value="Sing UP" />
+        </form>
+      
+      {% endif %}
+      </div>
+      
+    {% endif %}
+    
+    <div>
+      Players online list:
+      <ul>
+        {% for status in status_list %}
+          <li>{{ status.player.nickname }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    
+    <div>
+      Match list:
+      <ul>
+        {% for match in matchs %}
+          <li>
+            {{ match.created }}<br />
+            Player1: {{ match.player1.nickname }}<br />
+            Player2: {{ match.player2.nickname }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    
+  </div>
+{% endblock %}

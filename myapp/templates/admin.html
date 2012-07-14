@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Admins area{% endblock %}
+
+{% block content %}
+  <div>
+    <form action="" method="post">
+      Create a new Game!<br />
+      <input type="hidden" name="option" value="create_game" />
+      Name: <input type="text" name="name" /><br />
+      Link: <input type="text" name="game_id" /><br />
+      Active: <input type="checkbox" name="active" /><br />
+      <input type="submit" value="Create new Game" />
+    </form>
+  </div>
+  
+  <div>
+    Game list:
+    <ul>
+      {% for game in games %}
+        <li>
+          <input type="checkbox"
+            {% if game.active %} checked="checked" {% endif %}
+          />
+          {{ game.name|e }}
+          game_id: #{{ game.game_id }}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  
+{% endblock %}
