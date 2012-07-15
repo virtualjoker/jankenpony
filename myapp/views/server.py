@@ -14,7 +14,8 @@ from ..models.match import Match
 
 class ServerHandler(webapp2.RequestHandler):
   def get(self):
-    
+    # Remember to change, first build a set of changes of entitys,
+    # than just do one put with all the changes, its better.
     
     query = Game.all()
     query.filter('active =', True)
