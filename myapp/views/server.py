@@ -5,11 +5,21 @@
 
 import webapp2
 import datetime
+import json
+from time import time
+
+from google.appengine.api.channel import send_message
+from google.appengine.ext import deferred
 
 from ..models.game import Game
 from ..models.status import Status
 from ..models.match import Match
 
+def send(token, message):#, handlerSelf):
+  
+  send_message(token, message)
+  #handlerSelf.response.out.write("MSG sent:"+message+"<br>")
+  #handlerSelf.response.out.write("Token:"+player.token+"<br />")
 
 
 class ServerHandler(webapp2.RequestHandler):
@@ -68,6 +78,24 @@ class ServerHandler(webapp2.RequestHandler):
             "---- Player1:"+player1.nickname+"<br />"+
             "---- Player2:"+player2.nickname+"<br />")
           match.put()
+          
+          # Just to check delay time
+          t0 = time()
+          match_dic = {
+            'player1': match.player1.id,
+            'player2': match.player2.id,
+            'game': match.game.id,
+            'number': match.number,
+          }
+          message = json.dumps({'match': match_dic})
+          # STARTIN THE HIPER TEST
+          for i in range(50):
+            deferred.defer(send, player1.id, message)
+            deferred.defer(send, player2.id, message)
+          
+          delay = time() - t0
+          self.response.out.write("Delay:"+str(delay)+"<br />")
+          
           player1, player2 = None, None
       
       game.match_counter += 1

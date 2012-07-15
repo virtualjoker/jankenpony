@@ -18,6 +18,9 @@ class Player(db.Model):
   # The user's email
   email = db.EmailProperty()
   
+  # The user's token to send msg via channel
+  token = db.StringProperty()
+  
   # timestamp is auto-updated when created
   created = db.DateTimeProperty(auto_now_add=True)
   

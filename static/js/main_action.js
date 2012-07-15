@@ -49,7 +49,7 @@ main.action = {
     main.out('action.send dump(args):' + dump(args));
     
     $.ajax({
-      url: 'action', // All actions will be sent to /action url
+      url: '/action', // All actions will be sent to /action url
       type: 'POST',
       cache: false,
       dataType: 'json',
