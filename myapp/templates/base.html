@@ -2,13 +2,26 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="pt-br">
   <head>
     {% block head %}
+      <title>{% block title %}{% endblock %} - JankenPony</title>
       <link rel="shortcut icon" href="/favicon.ico">
       <link rel="stylesheet" href="/style.css" />
-      <title>{% block title %}{% endblock %} - JankenPony</title>
+      <!-- jQuery imports -->
+      <script type="text/javascript" src="jquery-1.4.4.min.js"></script>
+		  <script type="text/javascript" src="jquery-ui-1.8.9.custom.min.js"></script>
+    <script type="text/javascript" src="./_ah/channel/jsapi"></script>
+		  <!-- My javascript imports -->
+      <script type="text/javascript" src="main.js"></script>
+      <script type="text/javascript" src="main_action.js"></script>
+      <script type="text/javascript" src="main_channel.js"></script>
+      <script type="text/javascript" src="main_handler.js"></script>
+      <!-- This is just for debug -->
+		  <script type="text/javascript" src="./dump.js"></script>
     {% endblock %}
   </head>
 <body>
-
+  
+  <div id="out"></div>
+  
   <div id="top">
     <div id="header">
       <div id="navigation">

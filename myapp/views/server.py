@@ -40,7 +40,9 @@ class ServerHandler(webapp2.RequestHandler):
           self.response.out.write("finish<br/>")
           match.finished = True
           match.put()
-        #elif not player1.shot:
+        # Here I have checked if p1 and p2 didn't shot, but I have to
+        # check if one of them shotted and the challenger didn't
+        #elif not player1.shot: 
           #match
       
       self.response.out.write("Game:"+game.name+"<br />")

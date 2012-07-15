@@ -27,6 +27,24 @@ body {
   background-color:#E7EBF2;
 }
 
+#out {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  background-color: #cccccc;
+  width: 800px;
+  z-index: 1000;
+  opacity: 0.65; /* CSS3 Firefox2 e Opera9 */
+  -moz-opacity: 0.65; /* Mozilla */
+  filter: alpha(opacity=65); /* IE */
+}
+
+#out p {
+  border: 1px dashed #333;
+  padding: 4px;
+  margin: 6px;
+}
+
 #top {
   background-color: #3B5998;
   border-bottom: 1px solid #133783;
