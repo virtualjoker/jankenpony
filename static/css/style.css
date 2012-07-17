@@ -109,3 +109,61 @@ body {
   color: gray;
 }
 
+
+#matchs {
+  position: absolute;
+  top: 40px;
+  width: 800px;
+  left: 50%;
+  margin-left: -400px;
+  z-index: 999;
+}
+
+.new_match {
+  position: relative;
+  height: 200px;
+  width: 800px;
+  border: 1px dashed #000;
+  background-color: #ccc;
+}
+
+.new_match .player1_image {
+  position: absolute;
+  height: 200px;
+  width:  150px;
+  left: 0px;
+  top: 0px;
+}
+
+.new_match .player2_image {
+  position: absolute;
+  height: 200px;
+  width:  150px;
+  right: 0px;
+  top: 0px;
+}
+
+.new_match .rock_image {
+  position: absolute;
+  height: 50px;
+  width:  50px;
+  left: 200px;
+  top: 12px;
+}
+
+.new_match .paper_image {
+  position: absolute;
+  height: 50px;
+  width:  50px;
+  left: 200px;
+  top: 74px;
+}
+
+.new_match .scissors_image {
+  position: absolute;
+  height: 50px;
+  width:  50px;
+  left: 200px;
+  top: 136px;
+}
+

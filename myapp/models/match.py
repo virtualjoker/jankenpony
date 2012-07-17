@@ -5,9 +5,10 @@
 from google.appengine.ext import db
 
 from player import Player
+from status import Status
 from game import Game
 
-shot_choices = set(["rock", "paper", "scissors"])
+shot_choices = set(['rock', 'paper', 'scissors'])
 
 class Match(db.Model):
   """ Match Model
@@ -20,13 +21,17 @@ class Match(db.Model):
   
   # Who is the player1?
   player1 = db.ReferenceProperty(reference_class=Player, required=True, collection_name='player1_set')
+  # What is the player1 status?
+  player1_status = db.ReferenceProperty(reference_class=Status, required=True, collection_name='player1_status_set')
   # The player1 shot
-  player1_shot = db.StringProperty(choices=shot_choices, default=None)
+  player1_choice = db.StringProperty(choices=shot_choices, default=None)
   
   # Who is the player2?
   player2 = db.ReferenceProperty(reference_class=Player, required=True, collection_name='player2_set')
+  # What is the player2 status?
+  player2_status = db.ReferenceProperty(reference_class=Status, required=True, collection_name='player2_status_set')
   # The player2 shot
-  player2_shot = db.StringProperty(choices=shot_choices, default=None)
+  player2_choice = db.StringProperty(choices=shot_choices, default=None)
   
   # Who wins?
   winner = db.ReferenceProperty(reference_class=Player, default=None)

@@ -11,6 +11,15 @@ main.channel = {
   },
   onmessage: function(msg){
     main.out('channel.onmessage msg.data:' + msg.data);
+    response = null;
+    try{
+      response = $.parseJSON(msg.data);
+    }catch(e){
+      main.out('CHANNEL ERROR parseJSON:"'+e+'"');
+    }
+    if (response){
+      main.handler.response(response);
+    }
   },
   onerror: function(msg){
     main.out('channel.onerror dump(msg)' + dump(msg));
