@@ -5,7 +5,8 @@ from myapp.views.main import MainHandler
 #from myapp.views.login import LoginHandler
 from myapp.views.admin import AdminHandler
 from myapp.views.game import GameHandler
-from myapp.views.server import ServerHandler
+from myapp.views.create_match import CreateMatchHandler
+from myapp.views.run_match import RunMatchHandler
 from myapp.views.action import ActionHandler
 
 debug = True
@@ -14,7 +15,8 @@ url_map = [
             ('/', MainHandler),
             ('/admin', AdminHandler),
             (r'/game/(.*)', GameHandler),
-            ('/server', ServerHandler),
+            ('/create_match', CreateMatchHandler),
+            ('/run_match', RunMatchHandler),
             ('/action', ActionHandler),
             #('/.*', NotFoundHandler)
           ]

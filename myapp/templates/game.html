@@ -54,8 +54,8 @@
         {% for match in matchs %}
           <li>
             {{ match.created }}<br />
-            Player1: {{ match.player1.nickname }}<br />
-            Player2: {{ match.player2.nickname }}
+            Player1: {{ match.player1_status.player.nickname }}<br />
+            Player2: {{ match.player1_status.player.nickname }}
           </li>
         {% endfor %}
       </ul>

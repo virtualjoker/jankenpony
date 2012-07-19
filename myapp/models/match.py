@@ -20,16 +20,18 @@ class Match(db.Model):
     return str(self.key())
   
   # Who is the player1?
-  player1 = db.ReferenceProperty(reference_class=Player, required=True, collection_name='player1_set')
+  #player1 = db.ReferenceProperty(reference_class=Player, collection_name='player1_set')
+  
   # What is the player1 status?
-  player1_status = db.ReferenceProperty(reference_class=Status, required=True, collection_name='player1_status_set')
+  player1_status = db.ReferenceProperty(reference_class=Status, collection_name='player1_status_set')
   # The player1 shot
   player1_choice = db.StringProperty(choices=shot_choices, default=None)
   
   # Who is the player2?
-  player2 = db.ReferenceProperty(reference_class=Player, required=True, collection_name='player2_set')
+  #player2 = db.ReferenceProperty(reference_class=Player, collection_name='player2_set')
+  
   # What is the player2 status?
-  player2_status = db.ReferenceProperty(reference_class=Status, required=True, collection_name='player2_status_set')
+  player2_status = db.ReferenceProperty(reference_class=Status, collection_name='player2_status_set')
   # The player2 shot
   player2_choice = db.StringProperty(choices=shot_choices, default=None)
   
