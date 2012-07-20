@@ -42,3 +42,5 @@ libraries:
 
 builtins:
 - deferred: on
+- admin_redirect: on
+- appstats: on
