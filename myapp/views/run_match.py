@@ -11,6 +11,7 @@ from aux import is_development
 
 from google.appengine.api import memcache
 from google.appengine.api.channel import send_message
+from google.appengine.api import taskqueue
 from google.appengine.ext import deferred
 from google.appengine.ext import db
 
@@ -26,6 +27,7 @@ def send(token1, token2, message):
 # !!! REMEMBER TO LOGOUT USERS THAT DIDN'T ANY CHOSE (AFK USERS)
 class RunMatchHandler(webapp2.RequestHandler):
   def get(self):
+    response_message = {'messages':[]}
     # Remember to change, first build a set of changes of entitys,
     # than just do one put with all the changes, its better.
     
@@ -37,10 +39,13 @@ class RunMatchHandler(webapp2.RequestHandler):
     query.filter('finished =', False)
     matches = query.fetch(limit=None)
     status_list = []
+    matches_round = 0
     for match in matches:
       # If it is the first round, match_round is default value 0,
       # then we increments to know that will be the first round
       match.match_round += 1
+      if matches_round < match.match_round:
+        matches_round = match.match_round
       
       self.response.out.write(
         "match_round:"+str(match.match_round)+"<br />")
@@ -63,40 +68,58 @@ class RunMatchHandler(webapp2.RequestHandler):
         "m.p2:"+str(match.player2_choices)+"<br />")
       
       
+      player1_wins = 0
+      player2_wins = 0
+      
       # CHOSING THE WINNER IN ROUND 3
       if match.match_round == 3:
         match.finished = True # If it is the last round, it finishes here.
         
-        player1_wins = 0
-        player2_wins = 0
+        response_message['messages'].append('This is match round 3!')
+        
         for i in range(3):
+          
+          self.response.out.write(
+            'match.player1_choices['+str(i)+'] = ' +
+             match.player1_choices[i]+'<br />')
+          self.response.out.write(
+            'match.player1_choices['+str(i)+'] = ' +
+             match.player2_choices[i]+'<br />')
           
           if match.player1_choices[i] == match.player2_choices[i]:
             continue # If they play the same choice it draws and noone wins
           
           elif match.player1_choices[i] == 'nothing':
             player2_wins +=1 # Remember p2 didn't shot the same choice
+            self.response.out.write("P2 WINS<br />")
           
           elif match.player2_choices[i] == 'nothing':
             player1_wins +=1 # Remember p1 didn't shot the same choice
+            self.response.out.write("P1 WINS<br />")
              
-          elif match.player1_choices[i] == 'stone':
+          elif match.player1_choices[i] == 'rock':
             if match.player2_choices[i] == 'paper':
               player2_wins +=1
+              self.response.out.write("P2 WINS<br />")
             elif match.player2_choices[i] == 'scissors':
               player1_wins +=1
+              self.response.out.write("P1 WINS<br />")
           
           elif match.player1_choices[i] == 'paper':
             if match.player2_choices[i] == 'rock':
               player1_wins +=1
+              self.response.out.write("P1 WINS<br />")
             elif match.player2_choices[i] == 'scissors':
               player2_wins +=1
+              self.response.out.write("P2 WINS<br />")
           
           elif match.player1_choices[i] == 'scissors':
             if match.player2_choices[i] == 'rock':
               player2_wins +=1
+              self.response.out.write("P2 WINS<br />")
             elif match.player2_choices[i] == 'paper':
               player1_wins +=1
+              self.response.out.write("P1 WINS<br />")
         
         # If player 1 wins
         if player1_wins > player2_wins:
@@ -136,13 +159,17 @@ class RunMatchHandler(webapp2.RequestHandler):
       
       # If it is the last round, there is a winner and a loser, or draws
       if match.match_round == 3:
+        match_dic['player1_wins'] = player1_wins
+        match_dic['player2_wins'] = player2_wins
         if (match.winner):
           match_dic['winner'] = match.winner.id
         if (match.loser):
           match_dic['loser'] = match.loser.id
       
-      self.response.out.write("MSG"+str(match_dic)+"<br />")
-      message = json.dumps({'game_match': match_dic})
+      response_message['game_match'] = match_dic
+      
+      self.response.out.write("MSG: "+str(response_message)+"<br />")
+      message = json.dumps(response_message)
       # FOR NOW IT IS NO PROBLEM
       #deferred.defer(send, player1.id, player2.id, message)
       send(match.player1_status.player.id,
@@ -152,10 +179,12 @@ class RunMatchHandler(webapp2.RequestHandler):
     db.put(status_list)
     db.put(matches)
     
-    
-      
-      
-    
-    
+    # Check if it isn't the last match_round,
+    # than it needs to be recall
+    if matches_round < 3:
+      # If it was auto-call by task queue, than it needs to recall itself
+      if self.request.headers.has_key("X-AppEngine-QueueName"):
+        taskqueue.add(url='/run_match', method='GET', countdown='11')
+
 
 

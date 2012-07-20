@@ -22,6 +22,15 @@ handlers:
   static_files: static/image/\1
   upload: static/image/(.*\.(gif|png|jpg))
 
+
+- url: /create_match
+  script: main_admin.app
+  login: admin
+
+- url: /run_match
+  script: main_admin.app
+  login: admin
+
 - url: /.*
   script: main.app
 

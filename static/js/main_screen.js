@@ -21,8 +21,9 @@ main.screen = {
     match_div = $('#match_'+game_match.game)
     if (match_div){
       
+      text = 'MATCH FINISHED';
       if (game_match.match_round == 3){
-        text = 'MATCH FINISHED';
+        text = 'MATCH DRAWS';
         if (game_match.winner != 'undefined'){
           if (game_match.winner == main.data.player.id)
             text = 'YOU WIN';
@@ -43,12 +44,12 @@ main.screen = {
           text: 'This match number didn\'t finish right.',
         });
         gray_div.appendTo(match_div);
-        gray_div.delay(3000).fadeIn('slow');
+        gray_div.delay(6000).fadeIn('slow');
       }
       
       //$('.my_choses').children().unbind();
       
-      match_div.delay(6000)
+      match_div.delay(9000)
         .fadeOut('slow', function() {
           $(this).remove();
         });
@@ -73,7 +74,7 @@ main.screen = {
       player_last_choice = game_match.player1_choices.pop();
       challenger_last_choice = game_match.player2_choices.pop();
     }
-    else if (main.data.player.id == game_match.player1){
+    else if (main.data.player.id == game_match.player2){
       player_last_choice = game_match.player2_choices.pop();
       challenger_last_choice = game_match.player1_choices.pop();
     }
@@ -137,7 +138,7 @@ main.screen = {
       player = new_match.player1
       challenger = new_match.player2
     }
-    else if (main.data.player.id == new_match.player1){
+    else if (main.data.player.id == new_match.player2){
       player = new_match.player2
       challenger = new_match.player1
     }

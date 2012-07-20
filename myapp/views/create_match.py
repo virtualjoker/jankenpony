@@ -10,6 +10,7 @@ from datetime import datetime
 
 #from google.appengine.api import memcache
 from google.appengine.api.channel import send_message
+from google.appengine.api import taskqueue
 #from google.appengine.ext import deferred
 from google.appengine.ext import db
 
@@ -99,6 +100,12 @@ class CreateMatchHandler(webapp2.RequestHandler):
              match.player2_status.player.id,
              message)
         
+        
+        if self.request.headers.has_key("X-Appengine-Cron"):
+          send(match.player1_status.player.id,
+             match.player2_status.player.id,
+             'CRON JOB TASK')
+         
         # Increments the counter, cause we took the next player
         # to make pair with actual player
         i += 1
@@ -123,4 +130,8 @@ class CreateMatchHandler(webapp2.RequestHandler):
     db.put(matches)
     db.put(all_status)
     db.put(all_alone)
+    
+    if self.request.headers.has_key("X-Appengine-Cron"):
+      # Add the task to run matches in 11 secounds
+      taskqueue.add(url='/run_match', method='GET', countdown='11')
 
