@@ -1,0 +1,4 @@
+cron:
+- description: auto-create matches
+  url: /create_match
+  schedule: every 1 minutes

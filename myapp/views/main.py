@@ -7,6 +7,7 @@ import webapp2
 import jinja2
 import os
 
+from aux import is_development
 from ..models.player import get_current_player
 from ..models.game import Game
 
@@ -25,6 +26,7 @@ class MainHandler(webapp2.RequestHandler):
     
     
     template_values = {
+      'is_development': is_development,
       'player': player,
       'games': games,
       }

@@ -119,7 +119,7 @@ body {
   z-index: 999;
 }
 
-.new_match {
+.match {
   position: relative;
   height: 200px;
   width: 800px;
@@ -127,43 +127,85 @@ body {
   background-color: #ccc;
 }
 
-.new_match .player1_image {
+
+.match .gray_div, .match .red_div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: none;
+  text-align: center;
+  font-size: 42px;
+  line-height:200px;
+  vertical-align: middle;
+}
+.match .gray_div {
+  background-color: gray;
+  color: red;
+}
+.match .red_div {
+  background-color: red;
+  color: black;
+}
+
+.match .player_image, .match .challenger_image {
   position: absolute;
   height: 200px;
   width:  150px;
+  top: 0px;
+}
+.match .player_image {
   left: 0px;
-  top: 0px;
 }
-
-.new_match .player2_image {
-  position: absolute;
-  height: 200px;
-  width:  150px;
+.match .challenger_image {
   right: 0px;
-  top: 0px;
 }
 
-.new_match .rock_image {
+.match .round {
   position: absolute;
-  height: 50px;
-  width:  50px;
-  left: 200px;
+  left: 350px;
   top: 12px;
+  width: 100px;
+  text-align: center;
+  font-size: 32px;
+  color: red;
+  padding: 12px;
+  background-color: #ddd;
+  font-weight: bold;
 }
 
-.new_match .paper_image {
+.match .choses {
   position: absolute;
-  height: 50px;
-  width:  50px;
-  left: 200px;
-  top: 74px;
+  top: 0px;
+  width: 74px;
+  height: 100%;
 }
 
-.new_match .scissors_image {
-  position: absolute;
+.match .player_choses {
+  left: 200px;
+  background-color: #eee;
+}
+.match .player_choses img {
+  border: 0 solid blue;
+}
+
+.match .challenger_choses {
+  right: 200px;
+  background-color: #aaa;
+}
+
+.match .challenger_choses img {
+  border: 0 solid red;
+}
+
+.match .choses img {
+  position: relative;
+  display: block;
   height: 50px;
   width:  50px;
-  left: 200px;
-  top: 136px;
+  margin: 12px;
 }
+
+
 

@@ -7,6 +7,7 @@ import webapp2
 import jinja2
 import os
 
+from aux import is_development
 from ..models.player import get_current_player
 from ..models.game import Game
 from ..models.status import Status
@@ -85,6 +86,7 @@ class GameHandler(webapp2.RequestHandler):
     matchs = query.fetch(limit=None)
     
     template_values = {
+      'is_development': is_development,
       'player': player,
       'game': game,
       'status': status,

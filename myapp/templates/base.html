@@ -21,7 +21,12 @@
   </head>
 <body>
   
-  <div id="out"></div>
+  <div id="out">
+    <div>
+      <input id="out_active" type="checkbox"{% if is_development %} checked="checked"{% endif %}> -> recife messages in the screen.
+    </div>
+  </div>
+  
   <div id="matchs">MATCHS:</div>
   
   <div id="top">
@@ -31,6 +36,15 @@
       </div>
       
       <div id="login">
+        
+        <div style="display: inline;">[
+          {% if is_development %}
+            Development Server
+          {% else %}
+            Google Server
+          {% endif %}
+        ]</div>
+        
         Login:
         {% if player.is_anonymous %}
           <a href="{{ player.login_url }}">Login google's account</a>

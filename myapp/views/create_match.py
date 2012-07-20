@@ -10,12 +10,13 @@ from datetime import datetime
 
 #from google.appengine.api import memcache
 from google.appengine.api.channel import send_message
-from google.appengine.ext import deferred
+#from google.appengine.ext import deferred
 from google.appengine.ext import db
 
 from ..models.game import Game
 from ..models.status import Status
 from ..models.match import Match
+from ..models.alone import Alone
 
 def send(token1, token2, message):
   send_message(token1, message)
@@ -27,19 +28,33 @@ class CreateMatchHandler(webapp2.RequestHandler):
     
     self.response.out.write("Server test<br />")
     
+    # To create a new match we have be right that
+    # there is no unfinished match
+    # For this run_match must to play 3 times
+    # If for some rason run_match didn't run 3 times,
+    # we force to finish the matches
+    query = Match.all()
+    query.filter('finished =', False)
+    matches = query.fetch(limit=None)
+    for match in matches:
+      match.finished = True
+    db.put(matches)
+    
     
     query = Game.all()
     query.filter('active =', True)
     games = query.fetch(limit=None)
     matches = []
-    alone = []
+    all_alone = []
+    all_status = []
     
     for game in games:
       game.match_counter += 1
       game.match_datetime = datetime.now()
       
       self.response.out.write(
-        "Creating matches for game:"+game.name+"<br />")
+        "Creating matches #"+str(game.match_counter)+
+        " for game: "+game.name+"<br />")
       query = Status.all()
       query.filter('game =', game)
       query.filter('playing =', True)
@@ -58,7 +73,8 @@ class CreateMatchHandler(webapp2.RequestHandler):
         match = Match(player1_status=status_list[i],
                       player2_status=status_list[i+1],
                       game=game,
-                      number=game.match_counter)
+                      number=game.match_counter,
+                      match_round=0)
         
         self.response.out.write(
           "---- Player1:"+status_list[i].player.nickname+"<br />"+
@@ -68,13 +84,14 @@ class CreateMatchHandler(webapp2.RequestHandler):
         
         match_dic = {
           'player1': match.player1_status.player.id,
+          'player1_status': match.player1_status.id,
           'player2': match.player2_status.player.id,
+          'player2_status': match.player2_status.id,
           'game': match.game.id,
           'number': match.number,
-          # We can't send ID cause it wasn't create yed
-          #'id': match.id,
+          'match_round': match.match_round,
         }
-        message = json.dumps({'new_match': match_dic})
+        message = json.dumps({'game_match': match_dic})
         
         # FOR NOW IT IS NO PROBLEM
         #deferred.defer(send, player1.id, player2.id, message)
@@ -88,13 +105,22 @@ class CreateMatchHandler(webapp2.RequestHandler):
       
       # Test if this game has a odd number of playing players
       if len(status_list)%2 == 1:
-        # 
-        alone.append(status_list[len(status_list)])
+        # If there is odd number of playing players,
+        # than the last one can't play cause he hasn't a pair this time
+        alone = Alone(player_status=status_list[len(status_list)-1],
+                      game=game,
+                      match_number=game.match_counter)
+        all_alone.append(alone)
         self.response.out.write(
           "Alone player:"+status_list[i].player.nickname+"<br />")
         break # This player will not play this time
-    
+      
+      # After all changes in this game status_list, it will be added
+      # to all_status and changes will be saved
+      all_status.extend(status_list)
     
     db.put(games)
     db.put(matches)
+    db.put(all_status)
+    db.put(all_alone)
 
