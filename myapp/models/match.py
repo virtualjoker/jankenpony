@@ -4,6 +4,9 @@
 
 from datetime import datetime
 from google.appengine.ext import db
+from google.appengine.api import memcache
+from ..aux import serialize
+from ..aux import deserialize
 
 from player import Player
 from status import Status
@@ -61,3 +64,29 @@ class Match(db.Model):
   # ADD 3 SHOT TIMES TO EACH PLAYER
   # the match timestamp
   match_datetime = db.DateTimeProperty()
+
+
+
+
+
+def set_game_matches(game_matches, game):
+  # Here i will check how many time it is on cache,
+  # If it is a lot of time, it should be saved on data
+  memcache.set(game.id+'_matches', serialize(game_matches))
+
+
+def get_game_matches(game):
+  """ This function get games list
+      and return it, if it is in cache or in data """
+  
+  game_matches = deserialize(memcache.get(game.id+'_matches'))
+  if game_matches:
+    return game_matches
+  
+  query = Match.all()
+  query.filter('game =', game)
+  query.filter('finished =', False)
+  game_matches = query.fetch(limit=None)
+  memcache.set(game.id+'_matches', serialize(game_matches))
+  return game_matches
+

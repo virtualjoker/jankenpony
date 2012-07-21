@@ -8,7 +8,7 @@ from google.appengine.datastore import entity_pb
 
 is_development = os.environ['SERVER_SOFTWARE'].startswith('Development')
 
-def serialize_entities(models):
+def serialize(models):
   if models is None:
     return None
   elif isinstance(models, db.Model):
@@ -18,7 +18,7 @@ def serialize_entities(models):
     # A list
     return [db.model_to_protobuf(x).Encode() for x in models]
 
-def deserialize_entities(data):
+def deserialize(data):
   if data is None:
     return None
   elif isinstance(data, str):

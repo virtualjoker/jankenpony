@@ -3,6 +3,9 @@
 # model: Game
 
 from google.appengine.ext import db
+from google.appengine.api import memcache
+from ..aux import serialize
+from ..aux import deserialize
 
 
 class Game(db.Model):
@@ -39,3 +42,24 @@ class Game(db.Model):
   
   # timestamp of the last match
   last_match = db.DateTimeProperty()
+
+
+def set_games(games):
+  # Here i will check how many time it is on cache,
+  # If it is a lot of time, it should be saved on data
+  memcache.set('games', serialize(games))
+
+def get_games():
+  """ This function get games list
+      and return it, if it is in cache or in data """
+  
+  games = deserialize(memcache.get('games'))
+  if games:
+    return games
+  
+  query = Game.all()
+  query.filter('active =', True)
+  games = query.fetch(limit=None)
+  memcache.set('games', serialize(games))
+  return games
+

@@ -5,6 +5,8 @@
 from google.appengine.ext import db
 from google.appengine.api import users
 from google.appengine.api import memcache
+from ..aux import serialize
+from ..aux import deserialize
 
 class Player(db.Model):
   """ Player Model
@@ -52,7 +54,7 @@ class Player(db.Model):
 
 def get_current_player():
   """ This function get the player
-  and return player and login_logout url"""
+      and return player and login_logout url """
   user = users.get_current_user()
   if not user:
     return Player() # Not logged, return empty player
@@ -66,7 +68,7 @@ def get_current_player():
   query.filter('user =', user)
   player = query.get()
   if player:
-    memcache.add(user.user_id(), player)
+    memcache.set(user.user_id(), player)
     return player
   
   # Do not exist in database yet
@@ -74,6 +76,6 @@ def get_current_player():
                   nickname = user.nickname(),
                   email = user.email())
   player.put()
-  memcache.add(user.user_id(), player)
+  memcache.set(user.user_id(), player)
   return player
 

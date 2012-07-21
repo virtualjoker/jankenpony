@@ -8,11 +8,11 @@ import jinja2
 import os
 
 from google.appengine.api import memcache
-from aux import is_development
-from aux import serialize_entities
-from aux import deserialize_entities
+from ..aux import is_development
+from ..aux import serialize
+from ..aux import deserialize
 from ..models.player import get_current_player
-from ..models.game import Game
+from ..models.game import get_games
 
 jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/../templates/'))
 
@@ -21,15 +21,7 @@ class MainHandler(webapp2.RequestHandler):
   def get(self):
     player = get_current_player()
     
-    
-    games = deserialize_entities(memcache.get('games'))
-    if not games:
-      query = Game.all()
-      query.filter('active =', True)
-      query.order('-online_players')
-      games = query.fetch(limit=None)
-      memcache.set('games', serialize_entities(games))
-      return
+    games = get_games()
     
     
     template_values = {

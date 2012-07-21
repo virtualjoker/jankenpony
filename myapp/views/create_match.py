@@ -15,11 +15,15 @@ from google.appengine.api import taskqueue
 from google.appengine.ext import db
 from google.appengine.api import memcache
 
-from aux import serialize_entities
-from ..models.game import Game
-from ..models.status import Status
+from ..aux import serialize
+from ..aux import deserialize
+from ..models.game import get_games
+from ..models.game import set_games
+from ..models.status import get_game_status
+from ..models.status import set_game_status
+from ..models.match import get_game_matches
+from ..models.match import set_game_matches
 from ..models.match import Match
-from ..models.alone import Alone
 
 def send(token1, token2, message):
   send_message(token1, message)
@@ -31,59 +35,47 @@ class CreateMatchHandler(webapp2.RequestHandler):
     
     self.response.out.write("Server test<br />")
     
-    # To create a new match we have be right that
-    # there is no unfinished match
-    # For this run_match must to play 3 times
-    # If for some rason run_match didn't run 3 times,
-    # we force to finish the matches
-    query = Match.all()
-    query.filter('finished =', False)
-    matches = query.fetch(limit=None)
-    for match in matches:
-      match.finished = True
-    db.put(matches)
     
     
-    query = Game.all()
-    query.filter('active =', True)
-    query.order('-online_players')
-    games = query.fetch(limit=None)
-    matches = []
-    all_alone = []
+    games = get_games()
+    
     
     for game in games:
       game.match_counter += 1
-      game.match_datetime = datetime.now()
+      game.last_match = datetime.now()
+      
+      game_matches = []
       
       self.response.out.write(
         "Creating matches #"+str(game.match_counter)+
         " for game: "+game.name+"<br />")
-      query = Status.all()
-      query.filter('game =', game)
-      query.filter('playing =', True)
-      query.order('-balance') # Order by (win-loses)
-      status_list = query.fetch(limit=None)
+      
+      
+      game_status = get_game_status(game)
+      
       
       self.response.out.write(
-        "Len of players playing:"+str(len(status_list))+"<br />")
+        "Len of players playing:"+str(len(game_status))+"<br />")
       self.response.out.write(
-        "Range:"+str(range(0, len(status_list)-1, 2))+"<br />")
-      # From 0 to len(status_list), just pair numbers
+        "Range:"+str(range(0, len(game_status)-1, 2))+"<br />")
+      
+      # From 0 to len(game_status), just pair numbers
       # exclude for range the last item:
       # Last item will be a odd number (numero impar), or a single player
-      for i in range(0, len(status_list)-1, 2):
+      for i in range(0, len(game_status)-1, 2):
         
-        match = Match(player1_status=status_list[i],
-                      player2_status=status_list[i+1],
+        match = Match(player1_status=game_status[i],
+                      player2_status=game_status[i+1],
                       game=game,
                       number=game.match_counter,
                       match_round=0)
         
         self.response.out.write(
-          "---- Player1:"+status_list[i].player.nickname+"<br />"+
-          "---- Player2:"+status_list[i+1].player.nickname+"<br />")
+          "---- Player1:"+game_status[i].player.nickname+"<br />"+
+          "---- Player2:"+game_status[i+1].player.nickname+"<br />")
         
-        matches.append(match)
+        
+        game_matches.append(match)
         
         match_dic = {
           'player1': match.player1_status.player.id,
@@ -105,23 +97,25 @@ class CreateMatchHandler(webapp2.RequestHandler):
         
       
       # Test if this game has a odd number of playing players
-      if len(status_list)%2 == 1:
+      if len(game_status)%2 == 1:
         # If there is odd number of playing players,
         # than the last one can't play cause he hasn't a pair this time
-        alone = Alone(player_status=status_list[len(status_list)-1],
-                      game=game,
-                      match_number=game.match_counter)
-        all_alone.append(alone)
+        message = {'alerts': ['You will not play this time, cause you is the last of an odd list.']}
+        send_message(game_status[len(game_status)-1].player.id, message)
         self.response.out.write(
-          "Alone player:"+status_list[len(status_list)-1].player.nickname+"<br />")
-        break # This player will not play this time
+          "Alone player:"+game_status[len(game_status)-1].player.nickname+"<br />")
       
-      
+      # Continue the for game in games
+      set_game_status(game_status, game)
+      set_game_matches(game_matches, game)
+      for match in game_matches:
+        self.response.out.write(
+          "match p1:"+str(match.player1_status.player.nickname)+"<br />")
+        self.response.out.write(
+          "match p2:"+str(match.player2_status.player.nickname)+"<br />")
     
-    #memcache.set('games', serialize_entities(games))
-    db.put(games)
-    db.put(matches)
-    db.put(all_alone)
+    
+    set_games(games)
     
     if self.request.headers.has_key("X-Appengine-Cron"):
       # Add the task to run matches in 11 secounds

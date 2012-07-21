@@ -7,7 +7,7 @@ import webapp2
 import jinja2
 import os
 
-from aux import is_development
+from ..aux import is_development
 from ..models.player import get_current_player
 from ..models.game import Game
 from ..models.status import Status
