@@ -13,7 +13,9 @@ from google.appengine.api.channel import send_message
 from google.appengine.api import taskqueue
 #from google.appengine.ext import deferred
 from google.appengine.ext import db
+from google.appengine.api import memcache
 
+from aux import serialize_entities
 from ..models.game import Game
 from ..models.status import Status
 from ..models.match import Match
@@ -44,10 +46,10 @@ class CreateMatchHandler(webapp2.RequestHandler):
     
     query = Game.all()
     query.filter('active =', True)
+    query.order('-online_players')
     games = query.fetch(limit=None)
     matches = []
     all_alone = []
-    all_status = []
     
     for game in games:
       game.match_counter += 1
@@ -101,14 +103,6 @@ class CreateMatchHandler(webapp2.RequestHandler):
              message)
         
         
-        if self.request.headers.has_key("X-Appengine-Cron"):
-          send(match.player1_status.player.id,
-             match.player2_status.player.id,
-             'CRON JOB TASK')
-         
-        # Increments the counter, cause we took the next player
-        # to make pair with actual player
-        i += 1
       
       # Test if this game has a odd number of playing players
       if len(status_list)%2 == 1:
@@ -119,16 +113,14 @@ class CreateMatchHandler(webapp2.RequestHandler):
                       match_number=game.match_counter)
         all_alone.append(alone)
         self.response.out.write(
-          "Alone player:"+status_list[i].player.nickname+"<br />")
+          "Alone player:"+status_list[len(status_list)-1].player.nickname+"<br />")
         break # This player will not play this time
       
-      # After all changes in this game status_list, it will be added
-      # to all_status and changes will be saved
-      all_status.extend(status_list)
+      
     
+    #memcache.set('games', serialize_entities(games))
     db.put(games)
     db.put(matches)
-    db.put(all_status)
     db.put(all_alone)
     
     if self.request.headers.has_key("X-Appengine-Cron"):

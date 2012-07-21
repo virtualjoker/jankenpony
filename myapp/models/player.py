@@ -4,6 +4,7 @@
 
 from google.appengine.ext import db
 from google.appengine.api import users
+from google.appengine.api import memcache
 
 class Player(db.Model):
   """ Player Model
@@ -23,10 +24,6 @@ class Player(db.Model):
   
   # timestamp is auto-updated when created
   created = db.DateTimeProperty(auto_now_add=True)
-  
-  # DEPRECETED (Dunno how to implement it)
-  # timestamp of last login
-  #last_login = db.DateTimeProperty()
   
   @property
   def id(self):
@@ -58,18 +55,25 @@ def get_current_player():
   and return player and login_logout url"""
   user = users.get_current_user()
   if not user:
-    player = Player()
+    return Player() # Not logged, return empty player
+  
+  player = memcache.get(user.user_id())
+  if player:
     return player
-  else: # If it is logged in to a Googles account
-    query = Player.all()
-    query.filter('user =', user)
-    player = query.get()
-    if not player: # Do not exist in database yet
-      player = Player(user = user,
-                      nickname = user.nickname(),
-                      email = user.email())
-      player.put()
-      return player
-    else: # This user has a player
-      return player
+  
+  # Player not in cache
+  query = Player.all()
+  query.filter('user =', user)
+  player = query.get()
+  if player:
+    memcache.add(user.user_id(), player)
+    return player
+  
+  # Do not exist in database yet
+  player = Player(user = user,
+                  nickname = user.nickname(),
+                  email = user.email())
+  player.put()
+  memcache.add(user.user_id(), player)
+  return player
 

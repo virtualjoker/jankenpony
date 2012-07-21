@@ -71,55 +71,57 @@ class RunMatchHandler(webapp2.RequestHandler):
       player1_wins = 0
       player2_wins = 0
       
+      
+        
+      response_message['messages'].append('This is match round 3!')
+      
+      for i in range(match.match_round):
+        
+        self.response.out.write(
+          'match.player1_choices['+str(i)+'] = ' +
+           match.player1_choices[i]+'<br />')
+        self.response.out.write(
+          'match.player1_choices['+str(i)+'] = ' +
+           match.player2_choices[i]+'<br />')
+        
+        if match.player1_choices[i] == match.player2_choices[i]:
+          continue # If they play the same choice it draws and noone wins
+        
+        elif match.player1_choices[i] == 'nothing':
+          player2_wins +=1 # Remember p2 didn't shot the same choice
+          self.response.out.write("P2 WINS<br />")
+        
+        elif match.player2_choices[i] == 'nothing':
+          player1_wins +=1 # Remember p1 didn't shot the same choice
+          self.response.out.write("P1 WINS<br />")
+           
+        elif match.player1_choices[i] == 'rock':
+          if match.player2_choices[i] == 'paper':
+            player2_wins +=1
+            self.response.out.write("P2 WINS<br />")
+          elif match.player2_choices[i] == 'scissors':
+            player1_wins +=1
+            self.response.out.write("P1 WINS<br />")
+        
+        elif match.player1_choices[i] == 'paper':
+          if match.player2_choices[i] == 'rock':
+            player1_wins +=1
+            self.response.out.write("P1 WINS<br />")
+          elif match.player2_choices[i] == 'scissors':
+            player2_wins +=1
+            self.response.out.write("P2 WINS<br />")
+        
+        elif match.player1_choices[i] == 'scissors':
+          if match.player2_choices[i] == 'rock':
+            player2_wins +=1
+            self.response.out.write("P2 WINS<br />")
+          elif match.player2_choices[i] == 'paper':
+            player1_wins +=1
+            self.response.out.write("P1 WINS<br />")
+      
       # CHOSING THE WINNER IN ROUND 3
       if match.match_round == 3:
         match.finished = True # If it is the last round, it finishes here.
-        
-        response_message['messages'].append('This is match round 3!')
-        
-        for i in range(3):
-          
-          self.response.out.write(
-            'match.player1_choices['+str(i)+'] = ' +
-             match.player1_choices[i]+'<br />')
-          self.response.out.write(
-            'match.player1_choices['+str(i)+'] = ' +
-             match.player2_choices[i]+'<br />')
-          
-          if match.player1_choices[i] == match.player2_choices[i]:
-            continue # If they play the same choice it draws and noone wins
-          
-          elif match.player1_choices[i] == 'nothing':
-            player2_wins +=1 # Remember p2 didn't shot the same choice
-            self.response.out.write("P2 WINS<br />")
-          
-          elif match.player2_choices[i] == 'nothing':
-            player1_wins +=1 # Remember p1 didn't shot the same choice
-            self.response.out.write("P1 WINS<br />")
-             
-          elif match.player1_choices[i] == 'rock':
-            if match.player2_choices[i] == 'paper':
-              player2_wins +=1
-              self.response.out.write("P2 WINS<br />")
-            elif match.player2_choices[i] == 'scissors':
-              player1_wins +=1
-              self.response.out.write("P1 WINS<br />")
-          
-          elif match.player1_choices[i] == 'paper':
-            if match.player2_choices[i] == 'rock':
-              player1_wins +=1
-              self.response.out.write("P1 WINS<br />")
-            elif match.player2_choices[i] == 'scissors':
-              player2_wins +=1
-              self.response.out.write("P2 WINS<br />")
-          
-          elif match.player1_choices[i] == 'scissors':
-            if match.player2_choices[i] == 'rock':
-              player2_wins +=1
-              self.response.out.write("P2 WINS<br />")
-            elif match.player2_choices[i] == 'paper':
-              player1_wins +=1
-              self.response.out.write("P1 WINS<br />")
         
         # If player 1 wins
         if player1_wins > player2_wins:
@@ -148,10 +150,12 @@ class RunMatchHandler(webapp2.RequestHandler):
       match_dic = {
         'player1': match.player1_status.player.id,
         'player1_status': match.player1_status.id,
-        'player2': match.player2_status.player.id,
         'player1_choices': match.player1_choices,
+        'player1_wins': player1_wins,
+        'player2': match.player2_status.player.id,
         'player2_status': match.player2_status.id,
         'player2_choices': match.player2_choices,
+        'player2_wins': player2_wins,
         'game': match.game.id,
         'number': match.number,
         'match_round': match.match_round,
@@ -159,8 +163,6 @@ class RunMatchHandler(webapp2.RequestHandler):
       
       # If it is the last round, there is a winner and a loser, or draws
       if match.match_round == 3:
-        match_dic['player1_wins'] = player1_wins
-        match_dic['player2_wins'] = player2_wins
         if (match.winner):
           match_dic['winner'] = match.winner.id
         if (match.loser):
