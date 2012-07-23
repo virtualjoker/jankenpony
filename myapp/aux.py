@@ -1,12 +1,22 @@
 # aux.py
 
 import os
+import re
+import jinja2
 
 from google.appengine.ext import db
 from google.appengine.datastore import entity_pb
 
 
 is_development = os.environ['SERVER_SOFTWARE'].startswith('Development')
+
+jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates/'))
+
+def slugify(aslug):
+    aslug = re.sub('[^\w\s-]', '', aslug).strip().lower()
+    aslug = re.sub('\s+', '-', aslug)
+    return aslug
+
 
 def serialize(models):
   if models is None:

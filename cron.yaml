@@ -1,4 +1,4 @@
 cron:
 - description: auto-create matches
   url: /create_match
-  schedule: every 5 minutes
+  schedule: every 10 minutes

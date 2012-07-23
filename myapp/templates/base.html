@@ -17,12 +17,40 @@
       <script type="text/javascript" src="/main_screen.js"></script>
       <!-- This is just for debug -->
 		  <script type="text/javascript" src="/dump.js"></script>
+		  
+		  {# Here we are checking if player is_anonymous or not
+		     if he is anonymous, he can't open a channel and will not
+		     able to play a game. #}
+	    <script type="text/javascript">
+        $(document).ready(
+          function(event){
+	          {% if player.is_anonymous %}
+              main.start(event);
+            {% else %}
+              main.start(event);
+            {% endif %}
+          }
+        );
+        
+        {% if player.token %}
+	        main.channel.token = "{{ player.token|e }}";
+	      {% endif %}
+	    </script>
+		  
+		  
     {% endblock %}
   </head>
 <body>
   
+  <div id="messages">
+    {% for message in messages %}
+      <p>{{ message|e }}<p>
+    {% endfor %}
+  </div>
+  
   <div id="out">
     <div>
+      !!! CHANGED HERE JUST FOR TESTING !!!
       <input id="out_active" type="checkbox"{% if is_development %} checked="checked"{% endif %}> -> recife messages in the screen.
     </div>
   </div>

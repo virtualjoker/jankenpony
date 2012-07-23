@@ -8,8 +8,6 @@
       Create a new Game!<br />
       <input type="hidden" name="option" value="create_game" />
       Name: <input type="text" name="name" /><br />
-      Link: <input type="text" name="game_id" /><br />
-      Active: <input type="checkbox" name="active" /><br />
       <input type="submit" value="Create new Game" />
     </form>
   </div>
@@ -17,15 +15,28 @@
   <div>
     Game list:
     <ul>
+      
       {% for game in games %}
         <li>
-          <input type="checkbox"
-            {% if game.active %} checked="checked" {% endif %}
-          />
-          {{ game.name|e }}
-          game_id: #{{ game.game_id }}
+          <form action="" method="post">
+          
+            <input type="hidden" name="game_id" value="{{ game.id|e }}" />
+            <input name="active" type="checkbox" disabled="disabled"
+              {% if game.active %} checked="checked" {% endif %}
+            />
+            Name: {{ game.name|e }}
+            Slug: {{ game.slug|e }}
+            
+            {% if game.active %}
+              <input type="submit" name="option" value="Deactivate" />
+            {% else %}
+              <input type="submit" name="option" value="Activate" />
+            {% endif %}
+          
+          </form>
         </li>
       {% endfor %}
+        
     </ul>
   </div>
   

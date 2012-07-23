@@ -1,98 +1,55 @@
 # myapp.views.game
 #
-# Handler: Game
-# It will creates a game, and handle matchs
+# Handler: GameHandler
+# ...
 
 import webapp2
-import jinja2
 import os
 
 from ..aux import is_development
+from ..aux import jinja_environment
 from ..models.player import get_current_player
-from ..models.game import Game
-from ..models.status import Status
-# Testing match
-from ..models.match import Match
-
-jinja_environment = jinja2.Environment(
-  loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/../templates/'))
+from ..models.game import get_game_by_slug
 
 
 class GameHandler(webapp2.RequestHandler):
-  def post(self, game_id):
+  def post(self, slug):
     player = get_current_player()
     option = self.request.get('option')
     
     if not player.is_anonymous:
-      query = Game.all()
-      query.filter('active =', True)
-      query.filter('game_id =', game_id)
-      game = query.get()
+      game = get_game_by_slug(slug)
       if game:
-        query = Status.all()
-        query.filter('player =', player)
-        query.filter('game =', game)
-        status = query.get()
-        
-        if option == 'sign_up':
-          if not status:
-            status = Status(player=player, game=game)
-            status.put()
-            game.online_players += 1
-            game.put()
-        
-        elif option == 'sign_in':
-          if status:
-            if status.playing == False:
-              status.playing = True
-              status.put()
-              game.online_players += 1
-              game.put()
-        
-        elif option == 'sign_out':
-          if status:
-            if status.playing == True:
-              status.playing = False
-              status.put()
-              game.online_players -= 1
-              game.put()
-    
+        if option == 'enter':
+          player.enter_game(game)
+        elif option == 'leave':
+          player.leave_game(game)
+    #player.nickname='testing'
+    player.put()
     self.redirect(self.request.uri)
   
-  def get(self, game_id):
+  
+  
+  def get(self, slug):
     player = get_current_player()
     
+    game = get_game_by_slug(slug)
     
-    query = Game.all()
-    query.filter('active =', True)
-    query.filter('game_id =', game_id)
-    game = query.get()
+    player_status = player.get_game_status(game)
     
-    status = None
-    if not player.is_anonymous:
-      query = Status.all()
-      query.filter('player =', player)
-      query.filter('game =', game)
-      status = query.get()
-    
-    query = Status.all()
-    query.filter('game =', game)
-    query.filter('playing =', True)
-    status_list = query.fetch(limit=None)
-    
-    query = Match.all()
-    query.filter('game =', game)
-    query.filter('finished =', False)
-    matchs = query.fetch(limit=None)
+    game_status = game.get_status()
+    player.add_message('GS:'+str(game_status))
     
     template_values = {
       'is_development': is_development,
       'player': player,
       'game': game,
-      'status': status,
-      'status_list': status_list,
-      'matchs': matchs,
+      'player_status': player_status,
+      'game_status': game_status,
+      'messages': player.get_messages(),
       }
+    
+    player.put()
     template = jinja_environment.get_template('game.html')
     self.response.out.write(template.render(template_values))
 

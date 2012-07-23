@@ -6,34 +6,22 @@
   <div>
     <h2>{{ game.name }}</h2>
     {% if player.is_anonymous %}
-      <div>You should log in to play this game!</div>
+      <div>Please, login in your google's account to play this game!</div>
     {% else %}
       
-      <div id="status">
-      {% if status %}
-        
-        {% if status.playing %}
-          <form action="" method="post">
-            You are playing this game, wait the challenge
-            <input type="hidden" name="option" value="sign_out" />
-            <input type="submit" value="Sing OUT" />
-          </form>
-        {% else %}
-          <form action="" method="post">
-            You are not playing this game, sign in
-            <input type="hidden" name="option" value="sign_in" />
-            <input type="submit" value="Sing IN" />
-          </form>
-        {% endif %}
-      
-      {% else %}
-      
+      <div id="player_status">
+      {% if player_status %}
         <form action="" method="post">
-          You is out of this game
-          <input type="hidden" name="option" value="sign_up" />
-          <input type="submit" value="Sing UP" />
+          You are playing this game, wait the challenge
+          <input type="hidden" name="option" value="leave" />
+          <input type="submit" value="LEAVE" />
         </form>
-      
+      {% else %}
+        <form action="" method="post">
+          You are not playing this game, sign in
+          <input type="hidden" name="option" value="enter" />
+          <input type="submit" value="ENTER" />
+        </form>
       {% endif %}
       </div>
       
@@ -42,24 +30,12 @@
     <div>
       Players online list:
       <ul>
-        {% for status in status_list %}
+        {% for status in game_status %}
           <li>{{ status.player.nickname }}</li>
         {% endfor %}
       </ul>
     </div>
     
-    <div>
-      Match list:
-      <ul>
-        {% for match in matchs %}
-          <li>
-            {{ match.created }}<br />
-            Player1: {{ match.player1_status.player.nickname }}<br />
-            Player2: {{ match.player1_status.player.nickname }}
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
     
   </div>
 {% endblock %}

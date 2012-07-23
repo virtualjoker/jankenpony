@@ -3,11 +3,31 @@
 {% block title %}Página principal{% endblock %}
 
 {% block content %}
+
+  {% if player_status %}
+    <div>
+      Your games that you are in:
+      <ul>
+        {% for status in player_status %}
+          <li>
+            <a href="/game/{{ status.game.slug }}">
+              {{ status.game.name|e }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    <div>
+      You are playing nothing at the momment, please join in a game.
+    </div>
+  {% endif %}
+  
   <div>
     Game list:
     <ul>
       {% for game in games %}
-        <li><a href="/game/{{ game.game_id }}">{{ game.name|e }}</a></li>
+        <li><a href="/game/{{ game.slug }}">{{ game.name|e }}</a></li>
       {% endfor %}
     </ul>
   </div>

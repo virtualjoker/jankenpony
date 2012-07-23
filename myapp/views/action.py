@@ -38,7 +38,6 @@ class ActionHandler(webapp2.RequestHandler):
     if action == 'get_token':
       # IT IS CREATING CHANNEL WHEN IT DOESN'T NEED
       player.token = create_channel(player.id)
-      player.put()
       response['token'] = player.token
     
     if action == 'shot':
@@ -89,6 +88,13 @@ class ActionHandler(webapp2.RequestHandler):
       
       
       response['messages'].append('Match round '+str(match.match_round))
+    
+    
+    
+    
+    
+    
+    player.put()
     
     self.response.out.write(json.dumps(response))
 

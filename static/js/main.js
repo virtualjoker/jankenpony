@@ -71,11 +71,6 @@ var main = {
   },
 };
 
-$(document).ready(
-  function(event){
-    main.start(event);
-  }
-);
 
 $(window).error(
   function(event){

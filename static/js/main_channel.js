@@ -26,15 +26,18 @@ main.channel = {
   },
   onclose: function(){
     main.out('channel.onclose forcing to restart');
-    this.start();
+    // It closed for some rason, lets take another token and reopen it
+    main.channel.token = null;
+    main.channel.start();
   },
   open: function(token){
     main.out('channel.open');
     
     if (token){
       this.token = token;
-      this.channel = new goog.appengine.Channel(this.token);
     }
+    
+    this.channel = new goog.appengine.Channel(this.token);
     
     this.socket = this.channel.open({
       'onopen': main.channel.onopen,
@@ -57,6 +60,14 @@ main.channel = {
   },
   start: function(){
     main.out('channel.start');
-    main.action.send('get_token');
+    //main.action.send('get_token');
+    if (this.token){
+      this.open();
+    }
+    else{
+      main.out('channel.start should take new token!');
+      // there is a error in there
+      main.action.send('get_token');
+    }
   },
 };

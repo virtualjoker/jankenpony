@@ -1,7 +1,7 @@
 import webapp2
 
 from myapp.views.main import MainHandler
-# Login depreceted to User area
+# Login deprecated to User area
 #from myapp.views.login import LoginHandler
 from myapp.views.admin import AdminHandler
 from myapp.views.game import GameHandler
