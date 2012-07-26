@@ -14,7 +14,7 @@ from ..models.game import get_game_by_slug
 
 class GameHandler(webapp2.RequestHandler):
   def post(self, slug):
-    player = get_current_player()
+    player = get_current_player(ip=self.request.remote_addr)
     option = self.request.get('option')
     
     if not player.is_anonymous:
@@ -25,25 +25,32 @@ class GameHandler(webapp2.RequestHandler):
         elif option == 'leave':
           player.leave_game(game)
     #player.nickname='testing'
-    player.put()
+    #player.put()
     self.redirect(self.request.uri)
   
   
   
   def get(self, slug):
-    player = get_current_player()
+    player = get_current_player(ip=self.request.remote_addr)
     
     game = get_game_by_slug(slug)
     
-    player_status = player.get_game_status(game)
+    #self.response.out.write('Game:'+str(game)+'<br/>')
+    #return
+    if game:
+      game_status = game.get_status()
+      player_status = player.get_game_status(game)
+    else:
+      game_status = None
+      player_status = None
     
-    game_status = game.get_status()
     player.add_message('GS:'+str(game_status))
     
     template_values = {
       'is_development': is_development,
       'player': player,
       'game': game,
+      'slug': slug,
       'player_status': player_status,
       'game_status': game_status,
       'messages': player.get_messages(),

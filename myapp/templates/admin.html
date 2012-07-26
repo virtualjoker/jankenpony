@@ -24,12 +24,11 @@
             <input name="active" type="checkbox" disabled="disabled"
               {% if game.active %} checked="checked" {% endif %}
             />
-            Name: {{ game.name|e }}
-            Slug: {{ game.slug|e }}
-            
             {% if game.active %}
+              <a href="/game/{{ game.slug }}">{{ game.name|e }}</a>
               <input type="submit" name="option" value="Deactivate" />
             {% else %}
+              {{ game.name|e }}
               <input type="submit" name="option" value="Activate" />
             {% endif %}
           

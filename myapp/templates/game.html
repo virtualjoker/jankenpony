@@ -4,38 +4,44 @@
 
 {% block content %}
   <div>
-    <h2>{{ game.name }}</h2>
-    {% if player.is_anonymous %}
-      <div>Please, login in your google's account to play this game!</div>
-    {% else %}
-      
-      <div id="player_status">
-      {% if player_status %}
-        <form action="" method="post">
-          You are playing this game, wait the challenge
-          <input type="hidden" name="option" value="leave" />
-          <input type="submit" value="LEAVE" />
-        </form>
+    {% if game %}
+      <h2>{{ game.name }}</h2>
+      {% if player.is_anonymous %}
+        <div>Please, login in your google's account to play this game!</div>
+        <div>At momment, anonymous can't play it, but it will can soon!</div>
       {% else %}
-        <form action="" method="post">
-          You are not playing this game, sign in
-          <input type="hidden" name="option" value="enter" />
-          <input type="submit" value="ENTER" />
-        </form>
+        
+        <div id="player_status">
+        {% if player_status %}
+          <form action="" method="post">
+            You are playing this game, wait the challenge
+            <input type="hidden" name="option" value="leave" />
+            <input type="submit" value="LEAVE" />
+          </form>
+        {% else %}
+          <form action="" method="post">
+            You are not playing this game, sign in
+            <input type="hidden" name="option" value="enter" />
+            <input type="submit" value="ENTER" />
+          </form>
+        {% endif %}
+        </div>
+        
       {% endif %}
+      
+      <div>
+        Players online list:
+        <ul>
+          {% for status in game_status %}
+            <li>{{ status.player.nickname }}</li>
+          {% endfor %}
+        </ul>
       </div>
       
+    {% else %}
+    
+      <p>This game {{ slug }} this not exist.</p>
+    
     {% endif %}
-    
-    <div>
-      Players online list:
-      <ul>
-        {% for status in game_status %}
-          <li>{{ status.player.nickname }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    
-    
   </div>
 {% endblock %}

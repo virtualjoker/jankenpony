@@ -29,12 +29,11 @@ body {
 
 #messages {
   position: absolute;
-  top: 40px;
+  bottom: 0px;
   width: 400px;
-  left: 50%;
-  margin-left: -200px;
+  right: 0px;
   z-index: 1000;
-  text-align: center;
+  text-align: right;
   font-size: 22px;
   opacity: 0.65; /* CSS3 Firefox2 e Opera9 */
   -moz-opacity: 0.65; /* Mozilla */
@@ -51,6 +50,9 @@ body {
   opacity: 0.65; /* CSS3 Firefox2 e Opera9 */
   -moz-opacity: 0.65; /* Mozilla */
   filter: alpha(opacity=65); /* IE */
+  max-height:50%;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
 
 #out p {
@@ -139,6 +141,7 @@ body {
   width: 800px;
   border: 1px dashed #000;
   background-color: #ccc;
+  margin-top: 30px; /* In this space comes the Title */
 }
 
 
@@ -161,6 +164,22 @@ body {
 .match .red_div {
   background-color: red;
   color: black;
+}
+
+.match .name {
+  position: absolute;
+  width: 800px;
+  bottom: 200px; /* It goes to top */
+  font-size: 22px;
+  text-align: center;
+}
+
+.match .datetime {
+  position: absolute;
+  width: 800px;
+  top: 200px; /* It goes to bottom */
+  font-size: 14px;
+  text-align: right;
 }
 
 .match .player_image, .match .challenger_image {

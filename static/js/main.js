@@ -5,11 +5,14 @@
 var main = {
   data: {
     player: {},
-    matches: {},
+    game_matches: {},
   },
   start: function(event) {
     this.out('main.start');
     this.channel.start();
+  },
+  start_anonymous: function(event) {
+    this.out('main.start_anonymous');
   },
   unload: function(event){
     this.out('game.unload');
@@ -59,6 +62,7 @@ var main = {
         color: color,
         backgroundColor: background_color,
       },
+      /*
       mouseenter: function(){
         $(this).fadeOut(
           'slow',
@@ -67,6 +71,7 @@ var main = {
           }
         );
       },
+      */
     }).appendTo("#out");
   },
 };

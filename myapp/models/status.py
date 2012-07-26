@@ -4,11 +4,20 @@
 # It store the status of a player in a game
 # It indicates if player is playing or not, and its current balance
 
+import json
+
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from ..aux import serialize
 from ..aux import deserialize
+from google.appengine.api.channel import send_message
 
+
+shot_choices = ['nothing', 'rock', 'paper', 'scissors']
+
+#
+#  Ha uma inconsistencia com o cache de todas as referencias. CUIDADO!
+#
 
 class Status(db.Model):
   """ Status Model
@@ -29,19 +38,197 @@ class Status(db.Model):
                                 collection_name='game_status_set')
   
   # Playing, indicates if player is playing it now
+  # Just player.enter_game/leave_game can handler this property
   playing = db.BooleanProperty(default=True)
   
   # This is the balance (saldo)
   # Wins - Losts, never less than zero
   balance = db.IntegerProperty(default=0)
   
-  # How many matches this player played in this game?
-  match_counter = db.IntegerProperty(default=0)
-  
   # timestamp is auto-updated when created
   # it indicates when this player entred in this queue
   created = db.DateTimeProperty(auto_now_add=True)
   
-  # Last match time
-  last_match = db.DateTimeProperty(auto_now_add=True)
+  
+  
+  
+  
+  
+  
+  
+  
+  ############################
+  #  CACHING AND PERSISTING  #
+  ############################
+  
+  
+  persist = False
+  persistent_attributes = ['balance', 'playing', 'match_counter']
+  
+  def __setattr__(self, name, value):
+    if name in self.persistent_attributes:
+      self.persist = True
+    return object.__setattr__(self, name, value)
+  
+  # THIS PUT ISN'T ATUALIZING CACHE WITH THE CORRECT VALUES OF:
+  # != SELF.PLAYER
+  # != SELF.GAME
+  def put(self, **kwargs):
+    if self.persist or not self.is_saved():
+      self.persist = False
+      super(Status, self).put(**kwargs)
+    #send_message(self.player.id, 'TESTING:'+str(self.persist))
+    
+    # HERE I'M SURE THAT I'M PUTTING IT ON CACHE WITH IN THE
+    # VERY OLD PLAYER AND GAME VALUES
+    memcache.set('status'+self.id, serialize(self))
+  
+  
+  
+  
+  
+  
+  
+  ###############
+  #  GAME PLAY  #
+  ###############
+  
+  challenger = db.SelfReferenceProperty(verbose_name='challenger_set')
+  shots = db.StringListProperty(default=[])
+  # For each match, increments it
+  match_counter = db.IntegerProperty(default=0)
+  
+  def shot(self, choice):
+    # We will have game actualized every round, couse this status
+    # will be take by game.get_status() who actualize the status.game
+    if len(self.shots) < self.game.match_round:
+      if choice in shot_choices:
+        self.shots.append(choice)
+        return True
+    return False # If for some rason he cant shot
+  
+  
+  def new_match(self, challenger):
+    # Updating the challenger to a challanger of this match
+    self.challenger = challenger
+    
+    self.shots = []
+    self.challenger.shots = []
+    
+    self.send_match()
+    
+    self.put() # Make sure that it is saving just in cache !... ???
+  
+  def update_match(self, challenger):
+    # Updating the challenger with its attualized shots
+    self.challenger = challenger
+    
+    self.send_match()
+    
+    self.put() # Make sure that it is saving just in cache !... ???
+  
+  def end_match(self):
+    self.challenger = None
+    self.shots = []
+    match_counter += 1 # It will force to save it in datastore
+    self.put()
+  
+  def alone_match(self):
+    self.balance += 1
+    
+    free_win = {}
+    
+    free_win['player'] = {
+      'id':self.player.id,
+      'nickname': self.player.nickname,
+      'status': self.id,
+      'shots': self.shots,
+      'balance': self.balance,
+      'match_counter': self.match_counter,
+      'match_round': self.match_round,
+    }
+    
+    free_win['game'] = {
+      'id': self.game.id,
+      'name': self.game.name,
+      'slug': self.game.slug,
+      'players_counter': self.game.players_counter,
+      'online_players': self.game.online_players,
+      'match_counter': self.game.match_counter,
+      'datetime': self.game.last_match.strftime("%d/%m/%y %I:%M:%S %p"),
+    }
+    
+    message = {'free_win': free_win}
+    send_message(self.player.id, json.dumps(message))
+    # When player do not play, it increments its match counter?
+    # match_counter += 1
+    self.put()
+  
+  
+  def send_match(self):
+    game_match = {}
+    
+    game_match['player'] = {
+      'id':self.player.id,
+      'nickname': self.player.nickname,
+      'status': self.id,
+      'shots': self.shots,
+      'balance': self.balance,
+      'match_counter': self.match_counter,
+    }
+    
+    game_match['challenger'] = {
+      'id': self.challenger.player.id,
+      'nickname': self.challenger.player.nickname,
+      'status': self.challenger.id,
+      'shots': self.challenger.shots,
+      'balance': self.challenger.balance,
+      'match_counter': self.challenger.match_counter,
+    }
+    
+    game_match['game'] = {
+      'id': self.game.id,
+      'name': self.game.name,
+      'slug': self.game.slug,
+      'players_counter': self.game.players_counter,
+      'online_players': self.game.online_players,
+      'match_counter': self.game.match_counter,
+      'match_round': self.game.match_round,
+      'datetime': self.game.last_match.strftime("%d/%m/%y %I:%M:%S %p"),
+    }
+    
+    message = {'game_match': game_match}
+    send_message(self.player.id, json.dumps(message))
+  
+  
+  
+  
+
+
+  
+
+
+
+
+
+
+#########################
+#  AUXILIARY FUNCTIONS  #
+#########################
+
+
+
+# It returns a single status based on its id
+def get_status(status_id):
+  status = deserialize(memcache.get('status'+status_id))
+  if status:
+    return status
+  
+  status = Status.get(status_id)
+  if not status: # If status not found
+    return None
+  
+  memcache.set('status'+status.id, serialize(status))
+  return status
+
 

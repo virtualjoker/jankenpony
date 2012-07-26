@@ -6,7 +6,6 @@ from myapp.views.main import MainHandler
 from myapp.views.admin import AdminHandler
 from myapp.views.game import GameHandler
 from myapp.views.action import ActionHandler
-
 debug = True
 
 url_map = [

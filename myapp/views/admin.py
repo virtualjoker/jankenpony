@@ -25,7 +25,7 @@ from ..aux import jinja_environment
 
 class AdminHandler(webapp2.RequestHandler):
   def post(self):
-    player = get_current_player()
+    player = get_current_player(ip=self.request.remote_addr)
     # If this player isn't admin shows restricted_access page.
     if not player.is_admin:
       template_values = {
@@ -71,7 +71,7 @@ class AdminHandler(webapp2.RequestHandler):
     #self.redirect(self.request.uri)
   
   def get(self):
-    player = get_current_player()
+    player = get_current_player(ip=self.request.remote_addr)
     # If this player isn't admin shows restricted_access page.
     if not player.is_admin:
       template_values = {

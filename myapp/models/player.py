@@ -1,13 +1,18 @@
 # myapp.models.player
 #
 # model: Player
-
 from google.appengine.ext import db
 from google.appengine.api import users
 from google.appengine.api import memcache
 from status import Status
+
 from ..aux import serialize
 from ..aux import deserialize
+
+
+#
+#  Ha uma inconsistencia com o cache de todas as referencias. CUIDADO!
+#
 
 class Player(db.Model):
   """ Player Model
@@ -30,6 +35,9 @@ class Player(db.Model):
   
   # The user's email
   email = db.EmailProperty()
+  
+  # The user's email
+  ip = db.StringProperty(required=True)
   
   # The user's token to send msg via channel
   token = db.StringProperty()
@@ -77,12 +85,28 @@ class Player(db.Model):
     return object.__setattr__(self, name, value)
   
   def put(self, **kwargs):
-    if not self.is_anonymous:
-      self.add_message('Player save persist:'+str(self.persist))
-      if self.persist or not self.is_saved():
-        self.persist = False
-        super(Player, self).put(**kwargs)
-      memcache.set('player'+self.user.user_id(), serialize(self))
+    # NOW ANONYMOUS IS SAVED BY HIS IP
+    self.add_message('4Player save persist:'+str(self.persist))
+    # If it will be saved on datastore
+    if self.persist or not self.is_saved():
+      self.persist = False
+      super(Player, self).put(**kwargs)
+      
+      # Anonymous is saved and gotted by its IPs
+      # cause it doesn't have user yet
+      if self.is_anonymous:
+        memcache.delete('anonymous'+self.ip)
+      else:
+        memcache.delete('player'+self.user.user_id())
+    
+    # If it will be saved just on cache
+    else:
+      # Anonymous is saved and gotted by its IPs
+      # cause it doesn't have user yet
+      if self.is_anonymous:
+        memcache.set('anonymous'+self.ip, serialize(self))
+      else:
+        memcache.set('player'+self.user.user_id(), serialize(self))
   
   
   
@@ -153,16 +177,18 @@ class Player(db.Model):
       
       if not game_status:
         game_status = Status(player=self, game=game, playing=True)
-        game_status.put()
+        
     
     game_status.playing = True
-    memcache.set('status'+game_status.id, serialize(game_status))
+    game_status.put()
     
     if game_status.id not in self.status_ids:
       self.status_ids.append(game_status.id)
       self.persist = True # It says that it should be saved in database
       self.put()
     
+    # IT IS VERY WRONG, PLAYER SHOULD BE PUT IN A LIST,
+    # AND THE LIST SHOULD BE ADDED TO GAME EACH create_match.
     game_status.game.add_status(game_status)
     
   
@@ -173,12 +199,13 @@ class Player(db.Model):
     if game_status:
       game_status.playing = False
       game_status.put()
-      memcache.delete('status'+game_status.id)
       
       self.status_ids.remove(game_status.id)
       self.persist = True # It says that it should be saved in database
       self.put()
       
+      # IT IS VERY WRONG, PLAYER SHOULD BE PUT IN A LIST TO LEAVE,
+      # AND THE LIST SHOULD BE REMOVED TO GAME EACH create_match.
       game_status.game.remove_status(game_status)
   
   
@@ -201,6 +228,7 @@ class Player(db.Model):
   def get_messages(self):
     msgs = self.messages
     self.messages = []
+    #self.put()
     return msgs
 
 
@@ -216,12 +244,17 @@ class Player(db.Model):
 #  AUXILIARY FUNCTIONS  #
 #########################
 
+
 # Get a current player and return it
 # if player not logged in a google account, return a Anonymous player
-def get_current_player():
+def get_current_player(ip):
   user = users.get_current_user()
   if not user:
-    return Player() # Not logged, return a Anonymous player
+    player = get_current_anonymous(ip)
+    player.add_message('Anonymous Player!')
+    player.add_message('ip:'+str(player.ip))
+    memcache.set('anonymous'+player.ip, serialize(player))
+    return player # Not logged, return a Anonymous player
   
   player = deserialize(memcache.get('player'+user.user_id()))
   
@@ -234,13 +267,59 @@ def get_current_player():
   query.filter('user =', user)
   player = query.get()
   if player:
+    player.add_message('Player got in database!')
+    memcache.set('player'+player.user.user_id(), serialize(player))
+    return player
+  
+  query = Player.all()
+  query.filter('user =', None)
+  query.filter('ip =', ip)
+  player = query.get()
+  if player:
+    player.user = user
+    player.nickname = user.nickname()
+    player.email = user.email()
+    player.add_message('Player got by its Anonymous user (by ip)!')
+    player.add_message('Now this player will not by anonymous anymore.')
+    player.put()
+    memcache.set('player'+player.user.user_id(), serialize(player))
+    return player
+    
+  # Do not exist in database yet
+  player = Player(user = user,
+                  nickname = user.nickname(),
+                  email = user.email(),
+                  ip = ip)
+  player.add_message('NEW PLAYER!')
+  player.put()
+  memcache.set('player'+player.user.user_id(), serialize(player))
+  return player
+
+
+# Get a current anonymous and return it based on his current ip
+def get_current_anonymous(ip):
+  #memcache.delete('anonymous'+ip)
+  player = deserialize(memcache.get('anonymous'+ip))
+  
+  if player:
+    player.add_message('Anonymous got on CACHE!')
+    return player
+  
+  # Player not in cache
+  query = Player.all()
+  query.filter('ip =', ip)
+  query.filter('user =', None)
+  player = query.get()
+  if player:
+    player.add_message('Anonymous got in database!')
     player.put()
     return player
   
   # Do not exist in database yet
-  player = Player(user = user,
-                  nickname = user.nickname(),
-                  email = user.email())
+  # If he is anonymous will be saved just with his IP
+  player = Player(ip = ip)
+  player.add_message('NEW ANONYMOUS!')
   player.put()
   return player
+
 

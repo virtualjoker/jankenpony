@@ -25,7 +25,7 @@
         $(document).ready(
           function(event){
 	          {% if player.is_anonymous %}
-              main.start(event);
+              main.start_anonymous(event);
             {% else %}
               main.start(event);
             {% endif %}
@@ -55,7 +55,7 @@
     </div>
   </div>
   
-  <div id="matchs">MATCHS:</div>
+  <div id="matchs"></div>
   
   <div id="top">
     <div id="header">

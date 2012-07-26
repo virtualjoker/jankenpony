@@ -48,9 +48,12 @@ class Game(db.Model):
   # Every new match increments this number
   match_counter = db.IntegerProperty(default=0)
   
+  # Indicates what round is the actual match 0='not in match'
+  match_round = db.IntegerProperty(default=0)
+  
   
   # timestamp of the last match
-  last_match = db.DateTimeProperty()
+  last_match = db.DateTimeProperty(auto_now_add=True)
   
   
   
@@ -62,21 +65,15 @@ class Game(db.Model):
   #  CACHING AND PERSISTING  #
   ############################
   
-  
-  persist = False
-  persistent_attributes = ['name', 'slug', 'active', 'status_ids']
-  
-  def __setattr__(self, name, value):
-    if name in self.persistent_attributes:
-      self.persist = True
-    return object.__setattr__(self, name, value)
-  
   def put(self, **kwargs):
-    if self.persist or not self.is_saved():
-      self.persist = False
-      super(Game, self).put(**kwargs)
-    
-    memcache.set('game'+self.slug, serialize(self))
+    super(Game, self).put(**kwargs)
+    # Games doesn't have any reference to any entity, for that when we
+    # are saving it we can save it in memcache too, cause there is no
+    # entity desactualized in there
+    if self.active:
+      memcache.set('game'+self.slug, serialize(self))
+    else:
+      memcache.delete('game')
   
   
   
@@ -138,8 +135,21 @@ class Game(db.Model):
   # List playing status ids for this game
   status_ids = db.StringListProperty()
   
+  def actualise_status(self, game_status):
+    # Actualizing the game saved on each status cached
+    # We are sure that using this funciton status.game are atualized
+    if type(game_status) == type([]):
+      for status in game_status:
+        status.game = self
+    elif type(game_status) == type({}):
+      for status_id, status in game_status.iteritems():
+        status.game = self
+  
+  
+  
   # It retuns a list of all status playing this game
-  def get_status(self):
+  def get_status(self, write=None):
+    # It will returns a serialized status in mem_cache
     serialized_status = memcache.get_multi(self.status_ids,
                                                 key_prefix='status')
     # Just copying my status_ids list to make some changes localy
@@ -148,7 +158,6 @@ class Game(db.Model):
     for status_id, status in serialized_status.iteritems():
       game_status.append(deserialize(status))
       missing_status_ids.remove(status_id)
-    
     
     # Taking the missing status in database and add them in memcache
     if missing_status_ids:
@@ -159,7 +168,47 @@ class Game(db.Model):
         game_status.append(status)
       memcache.set_multi(serialized_status, key_prefix='status')
     
-    return game_status
+    # I really dunno why, but the game_status list in this function
+    # works like a list of string, and when this function pass to some
+    # function or when it returns, game_status assume its really identity
+    # that is a list of status, not a list of strings... (crazy, I know)
+    self.actualise_status(game_status)
+    
+    return game_status # Returns a random list of Status playing this game
+  
+  
+  
+  
+  
+  # It retuns a DICT of all status playing this game
+  def get_status_dict(self, write=None):
+    # It will returns a serialized status in mem_cache
+    serialized_status = memcache.get_multi(self.status_ids,
+                                                key_prefix='status')
+    # Just copying my status_ids list to make some changes localy
+    missing_status_ids = list(self.status_ids)
+    game_status = {}
+    for status_id, status in serialized_status.iteritems():
+      game_status[status_id] = deserialize(status)
+      missing_status_ids.remove(status_id)
+    
+    # Taking the missing status in database and add them in memcache
+    if missing_status_ids:
+      missing_status = Status.get(missing_status_ids)
+      serialized_status = {}
+      for status in missing_status:
+        game_status[status_id] = deserialize(status)
+        serialized_status[status.id] = serialize(status)
+        
+      memcache.set_multi(serialized_status, key_prefix='status')
+    
+    # I really dunno why, but the game_status list in this function
+    # works like a list of string, and when this function pass to some
+    # function or when it returns, game_status assume its really identity
+    # that is a list of status, not a list of strings... (crazy, I know)
+    self.actualise_status(game_status)
+    
+    return game_status # Returns a random list of Status playing this game
   
   
   
@@ -269,7 +318,7 @@ def get_games():
 
 
 ##############################################################
-
+'''
 ### DEPRECATED
 def set_games(games, return_game_slugs=False): # It saves a list of games
   
@@ -286,7 +335,7 @@ def set_games(games, return_game_slugs=False): # It saves a list of games
   
   if return_game_slugs:
     return game_slugs
-
+'''
 
 
 

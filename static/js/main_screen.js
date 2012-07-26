@@ -17,14 +17,20 @@ function blink(element){
 }
 
 main.screen = {
+  //////////////////
+  // REMOVE MATCH //
+  //////////////////
+  
   remove_match: function(game_match){
-    match_div = $('#match_'+game_match.game)
+    match_div = $('#match_'+game_match.game.id)
     if (match_div){
-      
       text = 'MATCH FINISHED';
-      if (game_match.match_round == 3){
+      // THIS FUNCTION TO EXIBE THIS MESSAGE SHOULD BE MOVED
+      // TO A NEW FUNCTION SCREEN.END_GAME
+      // NEXT LINE NOT IMPLEMENTED RIGHT YET, BUT WILL NOT PLAY
+      if (game_match.game.match_round == 4){
         text = 'MATCH DRAWS';
-        if (game_match.winner != 'undefined'){
+        if (typeof game_match.winner != 'undefined'){
           if (game_match.winner == main.data.player.id)
             text = 'YOU WIN';
           else if (game_match.loser == main.data.player.id)
@@ -57,36 +63,34 @@ main.screen = {
     }
   },
   
+  
+  ////////////////////////
+  // UPDATE MATCH ROUND //
+  ////////////////////////
+  
   update_match_round: function(game_match){
-    $('#match_'+game_match.game+' > .round').fadeOut('fast', function() {
-        $(this).html(game_match.match_round);
-        $(this).fadeIn('fast');
+    match_round = game_match.game.match_round;
+    if (match_round == 4)
+      match_round = 'END';
+    $('#match_'+game_match.game.id+' > .round').fadeOut('fast', function() {
+        $(this).html(match_round).fadeIn('fast');
       });
     
   },
   
-  show_choses: function(game_match){
-    main.out('screen.show_chose.game: '+game_match.game);
+  
+  /////////////////
+  // SHOW CHOSES //
+  /////////////////
+  
+  show_choses: function(game_match){ // NOT REVIEWD YED
+    main.out('screen.show_chose.game: '+game_match.game.id);
     
     
-    // SELECTING THE PLAYER AND THE CHALLENGER
-    if (main.data.player.id == game_match.player1){
-      player_last_choice = game_match.player1_choices.pop();
-      challenger_last_choice = game_match.player2_choices.pop();
-    }
-    else if (main.data.player.id == game_match.player2){
-      player_last_choice = game_match.player2_choices.pop();
-      challenger_last_choice = game_match.player1_choices.pop();
-    }
-    else {
-      main.out('You aren\'t in this match!', 'error');
-      return
-    }
-    
-    $('#match_'+game_match.game+' > .choses > img').stop().css("borderWidth", "0px");
+    $('#match_'+game_match.game.id+' > .choses > img').stop().css("borderWidth", "0px");
     
     
-    
+    player_last_choice = game_match.player.shots.pop()
     
     main.out('player_last_choice = '+player_last_choice);
     
@@ -107,6 +111,7 @@ main.screen = {
         break;
     }
     
+    challenger_last_choice = game_match.challenger.shots.pop()
     
     main.out('challenger_last_choice = '+challenger_last_choice);
     
@@ -129,71 +134,77 @@ main.screen = {
       
   },
   
-  new_match: function(new_match){
-    main.out('screen.new_match.game: '+dump(new_match.game));
-    
-    
-    // SELECTING THE PLAYER AND THE CHALLENGER
-    if (main.data.player.id == new_match.player1){
-      player = new_match.player1
-      challenger = new_match.player2
-    }
-    else if (main.data.player.id == new_match.player2){
-      player = new_match.player2
-      challenger = new_match.player1
-    }
-    else {
-      main.out('You aren\'t in this match!', 'error');
-      return
-    }
+  
+  ///////////////
+  // NEW MATCH //
+  ///////////////
+  
+  new_match: function(game_match){
+    main.out('screen.game_match.game.id: '+dump(game_match.game.id));
     
     matchs = $('#matchs');
     
     match_div = $('<div/>', {  
-      id: 'match_'+new_match.game,
+      id: 'match_'+game_match.game.id,
       class: 'match',
     });
     
+    
+    game_name = $('<div/>', {  
+      class: 'name',
+      text: game_match.game.name+' #'+game_match.game.match_counter,
+    });
+    game_name.appendTo(match_div);
+    
+    game_datetime = $('<div/>', {  
+      class: 'datetime',
+      text: 'match number: #'+game_match.game.match_counter+
+            ' - '+game_match.game.datetime,
+    });
+    game_datetime.appendTo(match_div);
+    
     player_image = $('<img/>', {  
       class: 'player_image',
-      src: '/player.png', // Here comes the Player img
+      src: '/player.png', // Here comes the Player.img
     });
     player_image.appendTo(match_div);
     
+    
     challenger_image = $('<img/>', {  
       class: 'challenger_image',
-      src: '/challenger.png', // Here comes the Challenger img
+      src: '/challenger.png', // Here comes the Challenger.img
     });
     challenger_image.appendTo(match_div);
     
     
     match_round = $('<div/>', {  
-      //id: 'round_'+new_match.game,
       class: 'round',
-      text: new_match.match_round,
+      text: game_match.game.match_round,
     });
     match_round.appendTo(match_div);
     
     
     player_choses_div = $('<div/>', {  
-      //id: 'player_choses_'+new_match.game,
       class: 'player_choses choses',
     });
     
     challenger_choses_div = $('<div/>', {  
-      //id: 'player2_choses_'+new_match.game,
       class: 'challenger_choses choses',
     });
     
     
-    // ADDING MY CHOSES IMAGE IN MY_CHOSES DIV
+    
+    ///////////////////
+    // PLAYER CHOSES //
+    ///////////////////
+    
     rock_image = $('<img/>', {  
       class: 'rock_image',
       src: '/rock.png',
       click: function(){
-        main.action.send('shot', [new_match.game,  new_match.player1_status, new_match.player2_status, 'rock']);
+        main.action.send('shot', [game_match.game.slug, 'rock']);
         
-        $('#match_'+new_match.game+' > .player_choses > img').stop().css("borderWidth", "0px");
+        $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
         
         $(this).animate({
           borderWidth: '6px',
@@ -215,9 +226,9 @@ main.screen = {
       class: 'paper_image',
       src: '/paper.png',
       click: function(){
-        main.action.send('shot', [new_match.game,  new_match.player1_status, new_match.player2_status, 'paper']);
+        main.action.send('shot', [game_match.game.slug, 'paper']);
         
-        $('#match_'+new_match.game+' > .player_choses > img').stop().css("borderWidth", "0px");
+        $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
         
         $(this).animate({
           borderWidth: '6px',
@@ -239,9 +250,9 @@ main.screen = {
       class: 'scissors_image',
       src: '/scissors.png',
       click: function(){
-        main.action.send('shot', [new_match.game,  new_match.player1_status, new_match.player2_status, 'scissors']);
+        main.action.send('shot', [game_match.game.slug, 'scissors']);
         
-        $('#match_'+new_match.game+' > .player_choses > img').stop().css("borderWidth", "0px");
+        $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
         
         $(this).animate({
           borderWidth: '6px',
@@ -261,7 +272,10 @@ main.screen = {
     
     
     
-    // CHALLENGER CHOSES IMAGE
+    ///////////////////////
+    // CHALLENGER CHOSES //
+    ///////////////////////
+    
     
     rock_image = $('<img/>', {  
       class: 'rock_image',
