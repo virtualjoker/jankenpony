@@ -46,8 +46,7 @@ class RunMatchHandler(webapp2.RequestHandler):
       if game.match_round > 4:
         self.response.out.write("This game finished<br />")
         continue
-      else:
-        # It needs a new round to finish this match
+      elif game.match_round >3:
         run_new_round = True
       
       
