@@ -8,8 +8,9 @@ import os
 
 from ..aux import is_development
 from ..aux import jinja_environment
-from ..models.player import *
-from ..models.game import *
+from ..models.player import get_current_player
+from ..models.player import Player
+from ..models.game import get_games
 
 
 
@@ -19,21 +20,17 @@ class MainHandler(webapp2.RequestHandler):
     
     
     games = get_games()
-    #self.response.out.write('Game:'+str(games)+'<br/>')
-    #return
-    #player.add_message('PS_ids: '+str(player.status_ids))
-    player.add_message('PS: '+str(player.get_status()))
+    player.add_message('2PS: '+str(player.get_status()))
     
     template_values = {
       'is_development': is_development,
       'player': player,
-      'player_status': player.get_status(),
       'games': games,
+      'player_status': player.get_status(),
       'messages': player.get_messages(),
     }
     
-    #self.response.out.write(str(template_values))
-    player.put()
+    
     template = jinja_environment.get_template('main.html')
     self.response.out.write(template.render(template_values))
 

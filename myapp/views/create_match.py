@@ -51,36 +51,34 @@ class CreateMatchHandler(webapp2.RequestHandler):
       self.response.out.write(
         "Range:"+str(range(0, len(game_status)-1, 2))+"<br />")
       
-      # From 0 to len(game_status), just pair numbers
-      # exclude for range the last item:
-      # Last item will be a odd number (numero impar), or a single player
-      for i in range(0, len(game_status)-1, 2):
-        # I'm putting this players on this match! !!! \/ How?
-        # I duuno how I'll be sure that the player is playing THIS match
-        
-        
+      # While there is 2 or more palyers in the list
+      while len(game_status)>=2:
+       
+        player_status = game_status.pop()
+        challenger_status = game_status.pop()
+      
         self.response.out.write(
-          "---- Player1:"+game_status[i].player.nickname+' '+
-          str(game_status[i].balance)+"<br />"+
-          "---- Player2:"+game_status[i+1].player.nickname+' '+
-          str(game_status[i+1].balance)+"<br />")
+          "---- Player: "+player_status.player.nickname+' '+
+          str(player_status.balance)+"<br />"+
+          "---- Challenger: "+challenger_status.player.nickname+' '+
+          str(challenger_status.balance)+"<br />")
         
         # HERE WE NEED THEADS, CAUSE EACH NEW_MATCH WILL SEND A MESSAGE
-        game_status[i].new_match(game_status[i+1])
-        game_status[i+1].new_match(game_status[i])
+        player_status.new_match(challenger_status)
+        challenger_status.new_match(player_status)
         
         
         
-      
-      # Test if this game has a odd number of playing players
-      if len(game_status)>0 and len(game_status)%2 == 1:
-        # If there is odd number of playing players,
-        # than the last one can't play cause he hasn't a pair this time
-        game_status[len(game_status)-1].alone_match()
+        
+      # Test if this game has a odd number of playing players,
+      # then, here we've just 1 player left
+      if len(game_status)>0:
+        alone_status = game_status.pop()
+        alone_status.alone_match()
         self.response.out.write(
-          "Alone player:"+
-          str(game_status[len(game_status)-1].player.nickname)+' '+
-          str(game_status[len(game_status)-1].balance)+"<br />")
+          "Alone player: "+
+          str(alone_status.player.nickname)+' '+
+          str(alone_status.balance)+"<br />")
       
       
       game.put()

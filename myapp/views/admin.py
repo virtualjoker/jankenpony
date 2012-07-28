@@ -94,7 +94,6 @@ class AdminHandler(webapp2.RequestHandler):
       'messages': player.get_messages(),
       }
     
-    player.put()
     template = jinja_environment.get_template('admin.html')
     self.response.out.write(template.render(template_values))
 

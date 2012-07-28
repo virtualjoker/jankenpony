@@ -9,10 +9,9 @@ from status import Status
 from ..aux import serialize
 from ..aux import deserialize
 
-
 #
-#  Ha uma inconsistencia com o cache de todas as referencias. CUIDADO!
-#
+# When anonymous changes to a identifyed user, it isn't deleted from memory
+# (should be reviewed)
 
 class Player(db.Model):
   """ Player Model
@@ -48,7 +47,10 @@ class Player(db.Model):
   @property
   def id(self):
     # This method just return it's key in str
-    return str(self.key())
+    if self.is_saved():
+      return str(self.key())
+    else:
+      return self.ip
   
   @property
   def is_anonymous(self):
@@ -86,27 +88,19 @@ class Player(db.Model):
   
   def put(self, **kwargs):
     # NOW ANONYMOUS IS SAVED BY HIS IP
-    self.add_message('4Player save persist:'+str(self.persist))
+    self.add_message('player.put persist:'+str(self.persist)+
+                     ' is_saved:'+str(self.is_saved()))
     # If it will be saved on datastore
     if self.persist or not self.is_saved():
+      self.add_message('player.put on datastore')
       self.persist = False
       super(Player, self).put(**kwargs)
-      
-      # Anonymous is saved and gotted by its IPs
-      # cause it doesn't have user yet
-      if self.is_anonymous:
-        memcache.delete('anonymous'+self.ip)
-      else:
-        memcache.delete('player'+self.user.user_id())
     
-    # If it will be saved just on cache
+    # Anonymous is saved and gotted by its IPs
+    if self.is_anonymous:
+      memcache.set('anonymous'+self.ip, serialize(self))
     else:
-      # Anonymous is saved and gotted by its IPs
-      # cause it doesn't have user yet
-      if self.is_anonymous:
-        memcache.set('anonymous'+self.ip, serialize(self))
-      else:
-        memcache.set('player'+self.user.user_id(), serialize(self))
+      memcache.set('player'+self.user.user_id(), serialize(self))
   
   
   
@@ -219,17 +213,22 @@ class Player(db.Model):
   #  PLAYER MESSAGES  #
   #####################
   
-  # List of messages, saved just in cache
-  messages = db.StringListProperty()
   
-  def add_message(self, messages):
-    self.messages.append(messages)
+  def add_message(self, new_message):
+    messages = memcache.get('messages'+self.id)
+    if messages:
+      messages.append(str(len(messages)+1)+': '+new_message)
+      memcache.set('messages'+self.id, messages)
+    else:
+      memcache.set('messages'+self.id, ['1: '+new_message])
   
   def get_messages(self):
-    msgs = self.messages
-    self.messages = []
-    #self.put()
-    return msgs
+    messages = memcache.get('messages'+self.id)
+    if messages:
+      memcache.set('messages'+self.id, []) # Set a empty list
+      return messages
+    else:
+      return []
 
 
 
@@ -253,7 +252,7 @@ def get_current_player(ip):
     player = get_current_anonymous(ip)
     player.add_message('Anonymous Player!')
     player.add_message('ip:'+str(player.ip))
-    memcache.set('anonymous'+player.ip, serialize(player))
+    #memcache.set('anonymous'+player.ip, serialize(player))
     return player # Not logged, return a Anonymous player
   
   player = deserialize(memcache.get('player'+user.user_id()))
@@ -262,19 +261,17 @@ def get_current_player(ip):
     player.add_message('Player got on CACHE!')
     return player
   
-  # Player not in cache
+  # Player not in cache, trying to get from datastore
   query = Player.all()
   query.filter('user =', user)
   player = query.get()
   if player:
     player.add_message('Player got in database!')
-    memcache.set('player'+player.user.user_id(), serialize(player))
+    #memcache.set('player'+player.user.user_id(), serialize(player))
     return player
   
-  query = Player.all()
-  query.filter('user =', None)
-  query.filter('ip =', ip)
-  player = query.get()
+  # Trying to get an anonymous player by this ip
+  player = get_current_anonymous(ip)
   if player:
     player.user = user
     player.nickname = user.nickname()
@@ -282,7 +279,8 @@ def get_current_player(ip):
     player.add_message('Player got by its Anonymous user (by ip)!')
     player.add_message('Now this player will not by anonymous anymore.')
     player.put()
-    memcache.set('player'+player.user.user_id(), serialize(player))
+    #memcache.set('player'+player.user.user_id(), serialize(player))
+    memcache.delete('anonymous'+ip)
     return player
     
   # Do not exist in database yet
@@ -292,7 +290,7 @@ def get_current_player(ip):
                   ip = ip)
   player.add_message('NEW PLAYER!')
   player.put()
-  memcache.set('player'+player.user.user_id(), serialize(player))
+  #memcache.set('player'+player.user.user_id(), serialize(player))
   return player
 
 

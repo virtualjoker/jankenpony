@@ -3,10 +3,30 @@
 {% block title %}Página principal{% endblock %}
 
 {% block content %}
-
-  
   <div>
     {% if games %}
+      
+      {% if player_status %}
+        <div>
+          Your games that you are in:
+          <ul>
+            {% for status in player_status %}
+              <li>
+                <a href="/game/{{ status.game.slug }}">
+                  {{ status.game.name|e }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+        
+      {% else %}
+        <div>
+          You are playing nothing at the momment, please join in a game.
+        </div>
+      {% endif %}
+      
+      
       <div>
         Game list:
         <ul>
@@ -15,26 +35,6 @@
           {% endfor %}
         </ul>
       </div>
-      {% if player_status %}
-        <div>
-          Your games that you are in:
-          <ul>
-            {% if status %}
-              {% for status in player_status %}
-                <li>
-                  <a href="/game/{{ status.game.slug }}">
-                    {{ status.game.name|e }}
-                  </a>
-                </li>
-              {% endfor %}
-            {% endif %}
-          </ul>
-        </div>
-      {% else %}
-        <div>
-          You are playing nothing at the momment, please join in a game.
-        </div>
-      {% endif %}
       
     {% else %}
     <p>There is no active games at momment. Come back soon</p>

@@ -17,6 +17,8 @@ shot_choices = ['nothing', 'rock', 'paper', 'scissors']
 
 #
 #  Ha uma inconsistencia com o cache de todas as referencias. CUIDADO!
+#  A referencia do Game soh vai estar atualizada se puxada pelo
+#  game.get_status, que faz o trabalho de atualizar sua propria referencia
 #
 
 class Status(db.Model):
@@ -97,6 +99,7 @@ class Status(db.Model):
   shots = db.StringListProperty(default=[])
   # For each match, increments it
   match_counter = db.IntegerProperty(default=0)
+  wins = db.IntegerProperty(default=0)
   
   def shot(self, choice):
     # We will have game actualized every round, couse this status
@@ -104,6 +107,7 @@ class Status(db.Model):
     if len(self.shots) < self.game.match_round:
       if choice in shot_choices:
         self.shots.append(choice)
+        self.put()
         return True
     return False # If for some rason he cant shot
   
@@ -112,29 +116,38 @@ class Status(db.Model):
     # Updating the challenger to a challanger of this match
     self.challenger = challenger
     
-    self.shots = []
-    self.challenger.shots = []
+    # Is it realy necessary? We clear it when match ends in update_match
+    #self.shots = []
+    #self.challenger.shots = []
     
     self.send_match()
     
     self.put() # Make sure that it is saving just in cache !... ???
   
-  def update_match(self, challenger):
+  def update_match(self, challenger, write=None):
     # Updating the challenger with its attualized shots
     self.challenger = challenger
     
     self.send_match()
+    write('ADFSDF')
+    if write:
+      write('Update game_round:'+str(self.game.match_round)+
+            ' - player:'+self.player.nickname+'...<br>')
     
-    self.put() # Make sure that it is saving just in cache !... ???
-  
-  def end_match(self):
-    self.challenger = None
-    self.shots = []
-    match_counter += 1 # It will force to save it in datastore
-    self.put()
+    if self.game.match_round == 4: # When match ends...
+      self.challenger = None
+      self.shots = []
+      self.wins = 0
+      self.match_counter += 1 # It will force to save it in datastore
+      self.persist = True # Forcing again, dunno why
+    
+    self.put() # Is it saving in cache when match_round != 3?
+
   
   def alone_match(self):
     self.balance += 1
+    self.match_counter += 1
+    self.challenger = None
     
     free_win = {}
     
@@ -145,7 +158,6 @@ class Status(db.Model):
       'shots': self.shots,
       'balance': self.balance,
       'match_counter': self.match_counter,
-      'match_round': self.match_round,
     }
     
     free_win['game'] = {
@@ -155,6 +167,7 @@ class Status(db.Model):
       'players_counter': self.game.players_counter,
       'online_players': self.game.online_players,
       'match_counter': self.game.match_counter,
+      'match_round': self.game.match_round,
       'datetime': self.game.last_match.strftime("%d/%m/%y %I:%M:%S %p"),
     }
     

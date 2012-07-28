@@ -148,7 +148,7 @@ class Game(db.Model):
   
   
   # It retuns a list of all status playing this game
-  def get_status(self, write=None):
+  def get_status(self):
     # It will returns a serialized status in mem_cache
     serialized_status = memcache.get_multi(self.status_ids,
                                                 key_prefix='status')
@@ -181,7 +181,7 @@ class Game(db.Model):
   
   
   # It retuns a DICT of all status playing this game
-  def get_status_dict(self, write=None):
+  def get_status_dict(self):
     # It will returns a serialized status in mem_cache
     serialized_status = memcache.get_multi(self.status_ids,
                                                 key_prefix='status')

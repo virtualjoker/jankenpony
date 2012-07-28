@@ -5,8 +5,8 @@
 import webapp2
 import json
 
-from google.appengine.api.channel import create_channel
 from google.appengine.ext.db import Key
+from google.appengine.api.channel import create_channel
 
 from ..models.player import get_current_player
 from ..models.game import get_game_by_slug
@@ -18,6 +18,7 @@ class ActionHandler(webapp2.RequestHandler):
     self.post()
   def post(self):
     player = get_current_player(ip=self.request.remote_addr)
+    player.add_message('Start action')
     
     # Action to execute
     action = self.request.get('action')
@@ -45,6 +46,7 @@ class ActionHandler(webapp2.RequestHandler):
       # It is called just if the clien't haven't the token yet,
       # or if the token failled on connection
       player.token = create_channel(player.id)
+      player.put()
       response['token'] = player.token
     
     
@@ -62,21 +64,23 @@ class ActionHandler(webapp2.RequestHandler):
         response['messages'].append('NO GAME FOUND WITH THIS SLUG')
       else:
         player_status = player.get_game_status(game)
-        choice = args[1]
-        result = player_status.shot(choice)
-        player_status.put()
-        if result:
-          response['messages'].append('You shot '+choice+' in '+
-                                      str(game.match_round)+' round.')
+        if player_status.challenger: # Check if this player is in match
+          choice = args[1]
+          result = player_status.shot(choice)
+          if result:
+            response['messages'].append('You shot '+choice+' in '+
+                                        str(game.match_round)+' round.')
+          else:
+            response['messages'].append('You didn\'t shot '+choice+'.')
+            if len(player_status.shots) == player_status.game.match_round:
+              response['messages'].append('You already shot in this match.')
         else:
-          response['messages'].append('You didn\'t shot '+choice+'.')
-          if len(player_status.shots) == player_status.game.match_round:
-            response['messages'].append('You already shot in this match.')
+          response['messages'].append('You aren\'t in match.')
       
     
     
-    player.put()
     
+    player.add_message('End action')
     self.response.out.write(json.dumps(response))
 
 

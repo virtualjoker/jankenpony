@@ -24,8 +24,7 @@ class GameHandler(webapp2.RequestHandler):
           player.enter_game(game)
         elif option == 'leave':
           player.leave_game(game)
-    #player.nickname='testing'
-    #player.put()
+    
     self.redirect(self.request.uri)
   
   
@@ -35,8 +34,7 @@ class GameHandler(webapp2.RequestHandler):
     
     game = get_game_by_slug(slug)
     
-    #self.response.out.write('Game:'+str(game)+'<br/>')
-    #return
+    
     if game:
       game_status = game.get_status()
       player_status = player.get_game_status(game)
@@ -56,7 +54,6 @@ class GameHandler(webapp2.RequestHandler):
       'messages': player.get_messages(),
       }
     
-    player.put()
     template = jinja_environment.get_template('game.html')
     self.response.out.write(template.render(template_values))
 

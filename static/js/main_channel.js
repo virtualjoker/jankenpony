@@ -23,11 +23,13 @@ main.channel = {
   },
   onerror: function(msg){
     main.out('channel.onerror dump(msg)' + dump(msg));
+    
+    // Forces it to take a new token wen onclose forces to restart
+    main.channel.token = null;
   },
   onclose: function(){
     main.out('channel.onclose forcing to restart');
     // It closed for some rason, lets take another token and reopen it
-    main.channel.token = null;
     main.channel.start();
   },
   open: function(token){
