@@ -46,7 +46,7 @@ class RunMatchHandler(webapp2.RequestHandler):
       if game.match_round > 4:
         self.response.out.write("This game finished<br />")
         continue
-      elif game.match_round >3:
+      elif game.match_round < 4:
         run_new_round = True
       
       
@@ -133,8 +133,8 @@ class RunMatchHandler(webapp2.RequestHandler):
         
         self.response.out.write('TESTE<br>')
         
-        player_status.update_match(challenger_status, self.response.out.write)
-        challenger_status.update_match(player_status, self.response.out.write)
+        player_status.update_match(challenger_status)
+        challenger_status.update_match(player_status)
       
       
       # Continue in 'for game in games:'

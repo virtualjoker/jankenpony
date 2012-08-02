@@ -21,6 +21,14 @@ main.screen = {
   // REMOVE MATCH //
   //////////////////
   
+  images: {
+    player: $('<img />').attr('src', 'player.png'),
+    challenger: $('<img />').attr('src', 'challenger.png'),
+    stone_32px: $('<img />').attr('src', 'stone_32px.png'),
+    paper_32px: $('<img />').attr('src', 'paper_32px.png'),
+    scissors_32px: $('<img />').attr('src', 'scissors_32px.png'),
+  },
+  
   remove_match: function(game_match){
     match_div = $('#match_'+game_match.game.id)
     if (match_div){
@@ -197,76 +205,68 @@ main.screen = {
     ///////////////////
     // PLAYER CHOSES //
     ///////////////////
-    
-    rock_image = $('<img/>', {  
-      class: 'rock_image',
-      src: '/rock.png',
-      click: function(){
-        main.action.send('shot', [game_match.game.slug, 'rock']);
-        
-        $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
+    stone_image = this.images.stone_32px;
+    stone_image.addClass('stone_image').click(function(){
+      main.action.send('shot', [game_match.game.slug, 'rock']);
+      
+      $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
+      
+      $(this).animate({
+        borderWidth: '6px',
+        margin: '6px',
+      }, 'fast', function() {
         
         $(this).animate({
-          borderWidth: '6px',
-          margin: '6px',
-        }, 'fast', function() {
-          
-          $(this).animate({
-          borderWidth: '2px',
-          margin: '10px',
-            }, 'fast');
-          
-        });
+        borderWidth: '2px',
+        margin: '10px',
+          }, 'fast');
         
-      },
+      });
+      
     });
-    rock_image.appendTo(player_choses_div);
+    stone_image.appendTo(player_choses_div);
     
-    paper_image = $('<img/>', {  
-      class: 'paper_image',
-      src: '/paper.png',
-      click: function(){
-        main.action.send('shot', [game_match.game.slug, 'paper']);
-        
-        $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
+    
+    
+    paper_image = this.images.paper_32px;
+    paper_image.addClass('paper_image').click(function(){
+      main.action.send('shot', [game_match.game.slug, 'paper']);
+       
+      $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
+      
+      $(this).animate({
+        borderWidth: '6px',
+        margin: '6px',
+      }, 'fast', function() {
         
         $(this).animate({
-          borderWidth: '6px',
-          margin: '6px',
-        }, 'fast', function() {
-          
-          $(this).animate({
-          borderWidth: '2px',
-          margin: '10px',
-            }, 'fast');
-          
-        });
+        borderWidth: '2px',
+        margin: '10px',
+          }, 'fast');
         
-      },
+      });
+      
     });
     paper_image.appendTo(player_choses_div);
     
-    scissors_image = $('<img/>', {  
-      class: 'scissors_image',
-      src: '/scissors.png',
-      click: function(){
-        main.action.send('shot', [game_match.game.slug, 'scissors']);
-        
-        $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
+    scissors_image = this.images.scissors_32px;
+    scissors_image.addClass('scissors_image').click(function(){
+      main.action.send('shot', [game_match.game.slug, 'scissors']);
+      
+      $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
+      
+      $(this).animate({
+        borderWidth: '6px',
+        margin: '6px',
+      }, 'fast', function() {
         
         $(this).animate({
-          borderWidth: '6px',
-          margin: '6px',
-        }, 'fast', function() {
-          
-          $(this).animate({
-          borderWidth: '2px',
-          margin: '10px',
-            }, 'fast');
-          
-        });
+        borderWidth: '2px',
+        margin: '10px',
+          }, 'fast');
         
-      },
+      });
+      
     });
     scissors_image.appendTo(player_choses_div);
     
@@ -276,67 +276,57 @@ main.screen = {
     // CHALLENGER CHOSES //
     ///////////////////////
     
-    
-    rock_image = $('<img/>', {  
-      class: 'rock_image',
-      src: '/rock.png',
-      click: function(){
-        main.out('This is your challenger rock!', 'alert');
-        
+    stone_image2 = this.images.stone_32px;
+    stone_image2.addClass('stone_image').click(function(){
+      main.out('This is your challenger rock!', 'alert');
+      
+      $(this).animate({
+        borderWidth: '2px',
+        margin: '10px',
+      }, 'fast', function() {
         $(this).animate({
-          borderWidth: '2px',
-          margin: '10px',
-        }, 'fast', function() {
-          $(this).animate({
-            borderWidth: '0px',
-            margin: '12px',
-          }, 'fast');
-        });
-        
-      },
+          borderWidth: '0px',
+          margin: '12px',
+        }, 'fast');
+      });
+      
     });
+    stone_image2.appendTo(challenger_choses_div);
     
-    rock_image.appendTo(challenger_choses_div);
-    
-    paper_image = $('<img/>', {  
-      class: 'paper_image',
-      src: '/paper.png',
-      click: function(){
-        main.out('This is your challenger rock!', 'alert');
-        
+    paper_image2 = this.images.paper_32px;
+    paper_image2.addClass('paper_image').click(function(){
+      main.out('This is your challenger rock!', 'alert');
+      
+      $(this).animate({
+        borderWidth: '2px',
+        margin: '10px',
+      }, 'fast', function() {
         $(this).animate({
-          borderWidth: '2px',
-          margin: '10px',
-        }, 'fast', function() {
-          $(this).animate({
-            borderWidth: '0px',
-            margin: '12px',
-          }, 'fast');
-        });
-        
-      },
+          borderWidth: '0px',
+          margin: '12px',
+        }, 'fast');
+      });
+      
     });
-    paper_image.appendTo(challenger_choses_div);
+    paper_image2.appendTo(challenger_choses_div);
     
-    scissors_image = $('<img/>', {  
-      class: 'scissors_image',
-      src: '/scissors.png',
-      click: function(){
-        main.out('This is your challenger rock!', 'alert');
-        
+    
+    scissors_image2 = this.images.scissors_32px;
+    scissors_image2.addClass('scissors_image').click(function(){
+      main.out('This is your challenger rock!', 'alert');
+      
+      $(this).animate({
+        borderWidth: '2px',
+        margin: '10px',
+      }, 'fast', function() {
         $(this).animate({
-          borderWidth: '2px',
-          margin: '10px',
-        }, 'fast', function() {
-          $(this).animate({
-            borderWidth: '0px',
-            margin: '12px',
-          }, 'fast');
-        });
-        
-      },
+          borderWidth: '0px',
+          margin: '12px',
+        }, 'fast');
+      });
+      
     });
-    scissors_image.appendTo(challenger_choses_div);
+    scissors_image2.appendTo(challenger_choses_div);
     
     // ADDING THE CHOSES DIV
     player_choses_div.appendTo(match_div);

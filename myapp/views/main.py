@@ -4,7 +4,6 @@
 # It will create users, handler logins and logouts
 
 import webapp2
-import os
 
 from ..aux import is_development
 from ..aux import jinja_environment

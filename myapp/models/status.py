@@ -124,15 +124,11 @@ class Status(db.Model):
     
     self.put() # Make sure that it is saving just in cache !... ???
   
-  def update_match(self, challenger, write=None):
+  def update_match(self, challenger):
     # Updating the challenger with its attualized shots
     self.challenger = challenger
     
     self.send_match()
-    write('ADFSDF')
-    if write:
-      write('Update game_round:'+str(self.game.match_round)+
-            ' - player:'+self.player.nickname+'...<br>')
     
     if self.game.match_round == 4: # When match ends...
       self.challenger = None
@@ -188,6 +184,7 @@ class Status(db.Model):
       'shots': self.shots,
       'balance': self.balance,
       'match_counter': self.match_counter,
+      'wins': self.wins,
     }
     
     game_match['challenger'] = {
@@ -197,6 +194,7 @@ class Status(db.Model):
       'shots': self.challenger.shots,
       'balance': self.challenger.balance,
       'match_counter': self.challenger.match_counter,
+      'wins': self.challenger.wins,
     }
     
     game_match['game'] = {
