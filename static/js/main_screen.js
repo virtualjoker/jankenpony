@@ -22,11 +22,11 @@ main.screen = {
   //////////////////
   
   images: {
-    player: $('<img />').attr('src', 'player.png'),
-    challenger: $('<img />').attr('src', 'challenger.png'),
-    stone_32px: $('<img />').attr('src', 'stone_32px.png'),
-    paper_32px: $('<img />').attr('src', 'paper_32px.png'),
-    scissors_32px: $('<img />').attr('src', 'scissors_32px.png'),
+    player: $('<img />').attr('src', '/player.png'),
+    challenger: $('<img />').attr('src', '/challenger.png'),
+    rock_32px: $('<img />').attr('src', '/rock_32px.png'),
+    paper_32px: $('<img />').attr('src', '/paper_32px.png'),
+    scissors_32px: $('<img />').attr('src', '/scissors_32px.png'),
   },
   
   remove_match: function(game_match){
@@ -171,18 +171,10 @@ main.screen = {
     });
     game_datetime.appendTo(match_div);
     
-    player_image = $('<img/>', {  
-      class: 'player_image',
-      src: '/player.png', // Here comes the Player.img
-    });
-    player_image.appendTo(match_div);
     
+    this.images.player.clone().addClass('player_image').appendTo(match_div);
     
-    challenger_image = $('<img/>', {  
-      class: 'challenger_image',
-      src: '/challenger.png', // Here comes the Challenger.img
-    });
-    challenger_image.appendTo(match_div);
+    this.images.challenger.clone().addClass('challenger_image').appendTo(match_div);
     
     
     match_round = $('<div/>', {  
@@ -205,8 +197,8 @@ main.screen = {
     ///////////////////
     // PLAYER CHOSES //
     ///////////////////
-    stone_image = this.images.stone_32px;
-    stone_image.addClass('stone_image').click(function(){
+    //rock_image = this.images.rock_32px;
+    this.images.rock_32px.clone().addClass('rock_image').click(function(){
       main.action.send('shot', [game_match.game.slug, 'rock']);
       
       $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
@@ -223,13 +215,12 @@ main.screen = {
         
       });
       
-    });
-    stone_image.appendTo(player_choses_div);
+    }).appendTo(player_choses_div);
     
     
     
-    paper_image = this.images.paper_32px;
-    paper_image.addClass('paper_image').click(function(){
+    //paper_image = this.images.paper_32px;
+    this.images.paper_32px.clone().addClass('paper_image').click(function(){
       main.action.send('shot', [game_match.game.slug, 'paper']);
        
       $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
@@ -246,11 +237,10 @@ main.screen = {
         
       });
       
-    });
-    paper_image.appendTo(player_choses_div);
+    }).appendTo(player_choses_div);
     
-    scissors_image = this.images.scissors_32px;
-    scissors_image.addClass('scissors_image').click(function(){
+    //scissors_image = this.images.scissors_32px;
+    this.images.scissors_32px.clone().addClass('scissors_image').click(function(){
       main.action.send('shot', [game_match.game.slug, 'scissors']);
       
       $('#match_'+game_match.game.id+' > .player_choses > img').stop().css("borderWidth", "0px");
@@ -267,8 +257,7 @@ main.screen = {
         
       });
       
-    });
-    scissors_image.appendTo(player_choses_div);
+    }).appendTo(player_choses_div);
     
     
     
@@ -276,8 +265,8 @@ main.screen = {
     // CHALLENGER CHOSES //
     ///////////////////////
     
-    stone_image2 = this.images.stone_32px;
-    stone_image2.addClass('stone_image').click(function(){
+    //rock_image2 = this.images.rock_32px;
+    this.images.rock_32px.clone().addClass('rock_image').click(function(){
       main.out('This is your challenger rock!', 'alert');
       
       $(this).animate({
@@ -290,11 +279,10 @@ main.screen = {
         }, 'fast');
       });
       
-    });
-    stone_image2.appendTo(challenger_choses_div);
+    }).appendTo(challenger_choses_div);
     
-    paper_image2 = this.images.paper_32px;
-    paper_image2.addClass('paper_image').click(function(){
+    //paper_image2 = this.images.paper_32px;
+    this.images.paper_32px.clone().addClass('paper_image').click(function(){
       main.out('This is your challenger rock!', 'alert');
       
       $(this).animate({
@@ -307,12 +295,11 @@ main.screen = {
         }, 'fast');
       });
       
-    });
-    paper_image2.appendTo(challenger_choses_div);
+    }).appendTo(challenger_choses_div);
     
     
-    scissors_image2 = this.images.scissors_32px;
-    scissors_image2.addClass('scissors_image').click(function(){
+    //scissors_image2 = this.images.scissors_32px;
+    this.images.scissors_32px.clone().addClass('scissors_image').click(function(){
       main.out('This is your challenger rock!', 'alert');
       
       $(this).animate({
@@ -325,8 +312,7 @@ main.screen = {
         }, 'fast');
       });
       
-    });
-    scissors_image2.appendTo(challenger_choses_div);
+    }).appendTo(challenger_choses_div);
     
     // ADDING THE CHOSES DIV
     player_choses_div.appendTo(match_div);
